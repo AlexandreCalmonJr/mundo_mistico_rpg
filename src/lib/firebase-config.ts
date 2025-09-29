@@ -1,4 +1,3 @@
-'use server';
 /**
  * @fileOverview Firebase configuration and initialization.
  *
