@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Users, ShieldPlus, Cog, BookUser, Swords, Shield, Wand, ArrowBigUpDash, Map, Flame, Star } from 'lucide-react';
 import Link from 'next/link';
 import type { Character } from '@/lib/game-data';
+import { gameClasses, races, mythologies } from '@/lib/game-data';
 
 export default function DashboardPage() {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -26,14 +27,24 @@ export default function DashboardPage() {
         const defaultCharacter: Character = {
             id: 'char-default',
             name: 'Aventureiro',
-            race: 'human',
-            gameClass: 'warrior',
+            mythology: 'Norse',
+            race: 'aesir',
+            gameClass: 'berserker',
             level: 1,
         };
         setCharacter(defaultCharacter);
         localStorage.setItem('character', JSON.stringify(defaultCharacter));
     }
   }, []);
+
+  const getCharacterDescription = () => {
+    if (!character) return 'Nível 1 Explorador';
+    
+    const race = races.find(r => r.id === character.race);
+    const gameClass = gameClasses.find(gc => gc.id === character.gameClass);
+    
+    return `${race?.name || ''} ${gameClass?.name || ''} - Nível ${character.level}`;
+  }
 
   return (
     <main className="p-4 sm:p-6 lg:p-8">
@@ -43,7 +54,7 @@ export default function DashboardPage() {
                  <Card className="col-span-1">
                     <CardHeader className="text-center">
                         <CardTitle className="font-headline text-2xl">{character.name}</CardTitle>
-                        <CardDescription>Nível {character.level} Explorador</CardDescription>
+                        <CardDescription>{getCharacterDescription()}</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="text-center">

@@ -6,6 +6,7 @@ export type GameClass = {
   strengths: string[];
   weaknesses: string[];
   image: string;
+  mythology: string; // 'Norse', 'Greek', 'Egyptian', etc.
 };
 
 export type Race = {
@@ -13,6 +14,7 @@ export type Race = {
   name: string;
   description: string;
   image: string;
+  mythology: string; // 'Norse', 'Greek', 'Egyptian', etc.
 };
 
 export type Temple = {
@@ -24,6 +26,7 @@ export type Temple = {
 export type Character = {
   id: string;
   name: string;
+  mythology: string;
   race: string;
   gameClass: string;
   level: number;
@@ -43,53 +46,190 @@ export type Clan = {
   members: string[];
 }
 
+export const mythologies = [
+    { id: 'Norse', name: 'Nórdica' },
+    { id: 'Greek', name: 'Grega' },
+    { id: 'Egyptian', name: 'Egípcia' },
+    { id: 'Japanese', name: 'Japonesa' },
+    { id: 'Aztec', name: 'Asteca' },
+];
+
 export const gameClasses: GameClass[] = [
+  // Norse
   {
-    id: 'warrior',
-    name: 'Guerreiro',
-    description: 'Mestres do combate corpo a corpo, os guerreiros confiam na força bruta e em armaduras pesadas para dominar o campo de batalha.',
-    strengths: ['Alta vida', 'Defesa robusta', 'Dano consistente'],
-    weaknesses: ['Vulnerável à magia', 'Baixa mobilidade'],
-    image: 'warrior-class',
+    id: 'berserker',
+    name: 'Berserker',
+    description: 'Guerreiros ferozes que entram em fúria de batalha, canalizando espíritos animais para força e resistência sobrenaturais.',
+    strengths: ['Dano massivo', 'Resistência a dano', 'Imunidade a controle'],
+    weaknesses: ['Defesa baixa após fúria', 'Sem ataques à distância'],
+    image: 'berserker-class',
+    mythology: 'Norse',
   },
   {
-    id: 'mage',
-    name: 'Mago',
-    description: 'Manipuladores das artes arcanas, os magos podem dizimar inimigos à distância com feitiços poderosos, mas são frágeis em combate próximo.',
-    strengths: ['Dano em área massivo', 'Controle de grupo', 'Utilidade versátil'],
-    weaknesses: ['Baixa vida', 'Defesa fraca', 'Dependente de mana'],
-    image: 'mage-class',
+    id: 'seidr',
+    name: 'Seidr',
+    description: 'Feiticeiros do destino que manipulam os fios da realidade, usando runas para prever o futuro e lançar maldições ou bênçãos.',
+    strengths: ['Controle de grupo', 'Debuffs poderosos', 'Suporte'],
+    weaknesses: ['Dano direto baixo', 'Frágil'],
+    image: 'seidr-class',
+    mythology: 'Norse',
+  },
+  // Greek
+  {
+    id: 'hoplite',
+    name: 'Hoplita',
+    description: 'Soldados disciplinados que lutam em formação, usando lança e escudo com precisão mortal e táticas de batalha superiores.',
+    strengths: ['Defesa impenetrável', 'Trabalho em equipe', 'Contra-ataque'],
+    weaknesses: ['Lento', 'Vulnerável a flanqueamento'],
+    image: 'hoplite-class',
+    mythology: 'Greek',
   },
   {
-    id: 'archer',
-    name: 'Arqueiro',
-    description: 'Precisos e ágeis, os arqueiros se destacam em eliminar alvos de longe, usando sua velocidade para manter distância dos perigos.',
-    strengths: ['Alto dano a um único alvo', 'Excelente alcance', 'Alta mobilidade'],
-    weaknesses: ['Fraco em combate corpo a corpo', 'Vulnerável a controle de grupo'],
-    image: 'archer-class',
+    id: 'oracle',
+    name: 'Oráculo',
+    description: 'Escolhidos pelos deuses para transmitir profecias, seus poderes vêm da inspiração divina, curando aliados e punindo inimigos.',
+    strengths: ['Cura poderosa', 'Buffs de grupo', 'Dano sagrado'],
+    weaknesses: ['Baixa vida', 'Dependente dos favores divinos'],
+    image: 'oracle-class',
+    mythology: 'Greek',
+  },
+  // Egyptian
+  {
+    id: 'medjay',
+    name: 'Medjay',
+    description: 'Protetores do faraó e guardiões do deserto, são guerreiros versáteis, proficientes com arco e lâmina dupla.',
+    strengths: ['Versatilidade', 'Mobilidade', 'Dano consistente'],
+    weaknesses: ['Sem especialização extrema', 'Defesa mediana'],
+    image: 'medjay-class',
+    mythology: 'Egyptian',
+  },
+  {
+    id: 'priest-of-ra',
+    name: 'Sacerdote de Rá',
+    description: 'Invocadores que canalizam o poder do sol para queimar inimigos com fogo sagrado e curar aliados com sua luz.',
+    strengths: ['Dano de fogo', 'Cura em área', 'Anti-mortos-vivos'],
+    weaknesses: ['Poder reduzido à noite', 'Armadura leve'],
+    image: 'priest-class',
+    mythology: 'Egyptian',
+  },
+  // Japanese
+  {
+    id: 'samurai',
+    name: 'Samurai',
+    description: 'Guerreiros nobres que seguem o código do Bushido, mestres da katana, cuja honra e precisão são inigualáveis.',
+    strengths: ['Duelos 1v1', 'Dano preciso e alto', 'Posturas de combate'],
+    weaknesses: ['Pouco dano em área', 'Rígido código de conduta'],
+    image: 'samurai-class',
+    mythology: 'Japanese',
+  },
+    {
+    id: 'onmyoji',
+    name: 'Onmyoji',
+    description: 'Mestres do yin e yang, usam talismãs de papel (shikigami) para invocar espíritos e controlar os elementos.',
+    strengths: ['Invocação de familiares', 'Controle elemental', 'Exorcismo'],
+    weaknesses: ['Longo tempo de conjuração', 'Vulnerável sem seus talismãs'],
+    image: 'onmyoji-class',
+    mythology: 'Japanese',
+  },
+  // Aztec
+  {
+    id: 'jaguar-warrior',
+    name: 'Guerreiro Jaguar',
+    description: 'Guerreiros de elite que vestem peles de jaguar, conhecidos por sua ferocidade, furtividade e maestria com a macuahuitl.',
+    strengths: ['Furtividade', 'Dano de emboscada', 'Combate selvagem'],
+    weaknesses: ['Armadura leve', 'Suscetível a armadilhas'],
+    image: 'jaguar-warrior-class',
+    mythology: 'Aztec',
+  },
+  {
+    id: 'sun-priest',
+    name: 'Sacerdote do Sol',
+    description: 'Devotos de Huitzilopochtli que realizam sacrifícios para alimentar o sol, usando sangue e fogo em seus rituais de poder.',
+    strengths: ['Magia de sangue', 'Dano de fogo sacrificial', 'Fortalecimento de aliados'],
+    weaknesses: ['Requer sacrifício de vida', 'Moralidade questionável'],
+    image: 'sun-priest-class',
+    mythology: 'Aztec',
   },
 ];
 
 export const races: Race[] = [
-  {
-    id: 'human',
-    name: 'Humano',
-    description: 'Adaptáveis e versáteis, os humanos são a raça mais comum e podem se destacar em qualquer classe que escolherem.',
-    image: 'human-race'
-  },
-  {
-    id: 'elf',
-    name: 'Elfo',
-    description: 'Graciosos e com uma afinidade natural com a magia e a natureza, os elfos são excelentes magos e arqueiros.',
-    image: 'elf-race'
-  },
-  {
-    id: 'dwarf',
-    name: 'Anão',
-    description: 'Robustos e resilientes, os anões são mestres ferreiros e guerreiros formidáveis, conhecidos por sua resistência inabalável.',
-    image: 'dwarf-race'
-  },
+    // Norse
+    {
+        id: 'aesir',
+        name: 'Aesir',
+        description: 'Descendentes dos deuses da guerra e do poder, como Odin e Thor. Nascidos para liderar e lutar, com uma afinidade natural para o combate.',
+        image: 'aesir-race',
+        mythology: 'Norse',
+    },
+    {
+        id: 'vanir',
+        name: 'Vanir',
+        description: 'Ligados à natureza, magia e prosperidade, os Vanir são um povo mais pacífico, mas ferozes quando protegem suas terras e entes queridos.',
+        image: 'vanir-race',
+        mythology: 'Norse',
+    },
+    // Greek
+    {
+        id: 'demigod',
+        name: 'Semideus',
+        description: 'Filhos de um deus e um mortal, possuem habilidades extraordinárias herdadas de seu parente divino, mas carregam o peso de grandes expectativas.',
+        image: 'demigod-race',
+        mythology: 'Greek',
+    },
+    {
+        id: 'nymph',
+        name: 'Ninfa',
+        description: 'Espíritos da natureza ligados a uma localização específica, como uma fonte, uma gruta ou uma floresta. São belas, graciosas e protetoras.',
+        image: 'nymph-race',
+        mythology: 'Greek',
+    },
+    // Egyptian
+    {
+        id: 'blessed-of-horus',
+        name: 'Abençoado de Hórus',
+        description: 'Mortais que carregam a bênção do deus-falcão Hórus. Possuem visão aguçada e um senso inato de justiça e liderança.',
+        image: 'horus-race',
+        mythology: 'Egyptian',
+    },
+    {
+        id: 'risen-mummy',
+        name: 'Múmia Renascida',
+        description: 'Almas que foram mumificadas e retornaram à vida por um ritual poderoso. São resistentes, imortais e guardam segredos antigos.',
+        image: 'mummy-race',
+        mythology: 'Egyptian',
+    },
+    // Japanese
+    {
+        id: 'kitsune',
+        name: 'Kitsune',
+        description: 'Espíritos de raposa mágicos e inteligentes, conhecidos por suas ilusões, sabedoria e caudas múltiplas que indicam seu poder.',
+        image: 'kitsune-race',
+        mythology: 'Japanese',
+    },
+    {
+        id: 'oni-kin',
+        name: 'Oni-Kin',
+        description: 'Humanoides com sangue de demônios Oni, possuem grande força e uma aparência intimidadora, mas nem todos são maus por natureza.',
+        image: 'oni-race',
+        mythology: 'Japanese',
+    },
+    // Aztec
+    {
+        id: 'nagual',
+        name: 'Nagual',
+        description: 'Xamãs que possuem a habilidade de se transformar em uma forma animal, geralmente um jaguar, puma ou águia.',
+        image: 'nagual-race',
+        mythology: 'Aztec',
+    },
+     {
+        id: 'born-of-quetzalcoatl',
+        name: 'Nascido de Quetzalcoatl',
+        description: 'Descendentes da Serpente Emplumada, são sábios e artísticos, com uma conexão profunda com o céu, o conhecimento e a criação.',
+        image: 'quetzalcoatl-race',
+        mythology: 'Aztec',
+    },
 ];
+
 
 export const temples: Temple[] = [
     {

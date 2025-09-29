@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { gameClasses, races } from '@/lib/game-data';
+import { gameClasses, races, mythologies } from '@/lib/game-data';
 import type { Character } from '@/lib/game-data';
 import { generateCharacterSheet, GenerateCharacterSheetOutput } from '@/ai/flows/generate-character-sheet';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
@@ -64,10 +64,12 @@ export default function CharacterSheetPage() {
     const generateSheet = async () => {
         const raceInfo = races.find(r => r.id === parsedChar.race);
         const classInfo = gameClasses.find(c => c.id === parsedChar.gameClass);
+        const mythologyInfo = mythologies.find(m => m.id === parsedChar.mythology);
 
-        if (raceInfo && classInfo) {
+        if (raceInfo && classInfo && mythologyInfo) {
             const result = await generateCharacterSheet({
                 characterName: parsedChar.name,
+                characterMythology: mythologyInfo.name,
                 characterRace: raceInfo.name,
                 characterClass: classInfo.name,
                 classStrengths: classInfo.strengths,
@@ -87,6 +89,7 @@ export default function CharacterSheetPage() {
   
   const raceInfo = races.find(r => r.id === character.race);
   const classInfo = gameClasses.find(c => c.id === character.gameClass);
+  const mythologyInfo = mythologies.find(m => m.id === character.mythology);
   const avatar = PlaceHolderImages.find(p => p.id === `${character.race}-race`);
 
   return (
@@ -110,7 +113,7 @@ export default function CharacterSheetPage() {
                 <div className="flex justify-between items-start mb-6">
                     <div>
                         <h1 className="text-3xl font-headline font-bold text-primary">{character.name}</h1>
-                        <p className="text-muted-foreground">{raceInfo?.name} {classInfo?.name} - Nível {character.level}</p>
+                        <p className="text-muted-foreground">{raceInfo?.name} {classInfo?.name} de {mythologyInfo?.name} - Nível {character.level}</p>
                     </div>
                     <Button variant="outline" onClick={() => router.push('/dashboard/character/create')}>
                        <ShieldPlus className="mr-2" /> Criar Novo

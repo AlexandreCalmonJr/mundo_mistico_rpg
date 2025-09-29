@@ -12,8 +12,9 @@ import { z } from 'genkit';
 
 const GenerateCharacterSheetInputSchema = z.object({
   characterName: z.string().describe('The name of the character.'),
-  characterRace: z.string().describe('The race of the character (e.g., Human, Elf, Dwarf).'),
-  characterClass: z.string().describe('The class of the character (e.g., Warrior, Mage, Archer).'),
+  characterMythology: z.string().describe('The mythological pantheon of the character (e.g., Norse, Greek, Egyptian).'),
+  characterRace: z.string().describe('The race of the character (e.g., Aesir, Demigod, Kitsune).'),
+  characterClass: z.string().describe('The class of the character (e.g., Berserker, Hoplite, Samurai).'),
   classStrengths: z.array(z.string()).describe('List of strengths for the character\'s class.'),
   classWeaknesses: z.array(z.string()).describe('List of weaknesses for the character\'s class.'),
 });
@@ -43,22 +44,23 @@ const prompt = ai.definePrompt({
   name: 'generateCharacterSheetPrompt',
   input: { schema: GenerateCharacterSheetInputSchema },
   output: { schema: GenerateCharacterSheetOutputSchema },
-  prompt: `Você é um mestre de RPG experiente criando um novo personagem para um jogador em um mundo de fantasia sombria e mística chamado "Mundo Mítico".
+  prompt: `Você é um mestre de RPG experiente criando um novo personagem para um jogador em um mundo de fantasia sombria e mística.
 
 Crie uma ficha de personagem completa para:
 - Nome: {{{characterName}}}
+- Mitologia: {{{characterMythology}}}
 - Raça: {{{characterRace}}}
 - Classe: {{{characterClass}}}
 
-Considere os pontos fortes e fracos da classe ao gerar os atributos:
-- Pontos Fortes: {{#each classStrengths}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}
-- Pontos Fracos: {{#each classWeaknesses}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}
+Considere os pontos fortes e fracos da classe e raça ao gerar os atributos:
+- Pontos Fortes da Classe: {{#each classStrengths}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}
+- Pontos Fracos da Classe: {{#each classWeaknesses}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}
 
 Gere os seguintes detalhes:
-1.  **História (backstory):** Uma história de origem convincente com 2 ou 3 parágrafos. Deve ser sombria e misteriosa, mas com um pingo de esperança. Conecte a história à sua raça e classe.
-2.  **Atributos:** Gere quatro atributos principais: Força, Agilidade, Inteligência e Defesa. Os valores devem ser de 1 a 100 e devem refletir os pontos fortes e fracos da classe e raça do personagem. Por exemplo, um Guerreiro deve ter alta Força e Defesa, enquanto um Mago deve ter alta Inteligência.
-3.  **Habilidades Iniciais (initialAbilities):** Crie uma lista de 3 ou 4 nomes de habilidades iniciais que soem únicas e temáticas para a classe e raça.
-4.  **Equipamento Sugerido (suggestedEquipment):** Sugira 2 ou 3 peças de equipamento inicial, incluindo uma arma e uma peça de armadura. Dê um nome e uma breve descrição para cada item.
+1.  **História (backstory):** Uma história de origem convincente com 2 ou 3 parágrafos. Deve ser sombria e misteriosa, mas com um pingo de esperança. A história deve ser profundamente temática e enraizada na mitologia ({{{characterMythology}}}), raça ({{{characterRace}}}), e classe ({{{characterClass}}}) do personagem.
+2.  **Atributos:** Gere quatro atributos principais: Força, Agilidade, Inteligência e Defesa. Os valores devem ser de 1 a 100 e devem refletir os pontos fortes e fracos da classe e raça do personagem. Por exemplo, um Berserker Nórdico deve ter alta Força mas talvez baixa Inteligência, enquanto um Oráculo Grego deve ter alta Inteligência.
+3.  **Habilidades Iniciais (initialAbilities):** Crie uma lista de 3 ou 4 nomes de habilidades iniciais que soem únicas e temáticas para a classe, raça e mitologia.
+4.  **Equipamento Sugerido (suggestedEquipment):** Sugira 2 ou 3 peças de equipamento inicial que sejam tematicamente apropriadas para a mitologia. Dê um nome e uma breve descrição para cada item.
 
 Responda apenas com a estrutura de saída solicitada.
 `,
