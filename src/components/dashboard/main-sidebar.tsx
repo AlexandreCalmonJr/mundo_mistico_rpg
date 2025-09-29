@@ -10,22 +10,22 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarContent,
-  SidebarTrigger,
   SidebarFooter,
 } from '@/components/ui/sidebar';
 import { Button } from '../ui/button';
-import { LayoutDashboard, User, Map, MessageSquare, Users, Crown, LogOut, Sparkles, Shield, Swords, Users2, FileText, PanelLeft } from 'lucide-react';
+import { LayoutDashboard, User, Map, MessageSquare, Users2, Crown, LogOut, Sparkles, Swords, ShieldPlus } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
-import { Logo } from '../icons/logo';
 import { useEffect, useState } from 'react';
 
 
 const menuItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/dashboard/character/sheet', label: 'Meu Personagem', icon: User },
+  { href: '/dashboard/character/create', label: 'Criar Personagem', icon: ShieldPlus },
   { href: '/dashboard/classes', label: 'Classes e Raças', icon: Swords },
   { href: '/dashboard/clans', label: 'Clãs', icon: Users2 },
   { href: '/dashboard/adventure', label: 'Aventura', icon: Map },
+  { href: '/dashboard/chat', label: 'Chat Global', icon: MessageSquare },
 ];
 
 const adminMenuItems = [
@@ -88,7 +88,7 @@ export function MainSidebar() {
                     <SidebarMenuItem key={item.href}>
                     <SidebarMenuButton
                         asChild
-                        isActive={pathname === item.href}
+                        isActive={pathname.startsWith(item.href)}
                         tooltip={item.label}
                     >
                         <Link href={item.href}>
