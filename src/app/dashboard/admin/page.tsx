@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, Edit, Trash2 } from 'lucide-react';
-import { gameClasses as initialClasses, races as initialRaces, temples as initialTemples, classGroups as initialClassGroups, clans as initialClans } from '@/lib/game-data';
+import { gameClasses as initialClasses, races as initialRaces, temples as initialTemples, classGroups as initialClassGroups, clans as initialClans, mythologies } from '@/lib/game-data';
 import type { GameClass, Race, Temple, Character, ClassGroup, Clan } from '@/lib/game-data';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -163,6 +163,7 @@ export default function AdminPage() {
   
   const classColumns = [
     { accessorKey: 'name', header: 'Nome' },
+    { accessorKey: 'mythology', header: 'Mitologia', cell: ({row}: any) => mythologies.find(m => m.id === row.original.mythology)?.name || 'N/A' },
     { accessorKey: 'description', header: 'Descrição' },
     { accessorKey: 'strengths', header: 'Pontos Fortes', cell: ({row}: any) => row.original.strengths.join(', ') },
     { accessorKey: 'weaknesses', header: 'Pontos Fracos', cell: ({row}: any) => row.original.weaknesses.join(', ') },
@@ -183,6 +184,7 @@ export default function AdminPage() {
   
   const raceColumns = [
     { accessorKey: 'name', header: 'Nome' },
+    { accessorKey: 'mythology', header: 'Mitologia', cell: ({row}: any) => mythologies.find(m => m.id === row.original.mythology)?.name || 'N/A' },
     { accessorKey: 'description', header: 'Descrição' },
     {
       id: 'actions',
