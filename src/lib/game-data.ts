@@ -84,6 +84,7 @@ export const gameClasses: GameClass[] = [
         { attribute: 'Força', modifier: 15 },
         { attribute: 'Defesa', modifier: 5 },
         { attribute: 'Inteligência', modifier: -5 },
+        { attribute: 'Agilidade', modifier: -5 },
     ]
   },
   {
@@ -98,6 +99,7 @@ export const gameClasses: GameClass[] = [
         { attribute: 'Inteligência', modifier: 15 },
         { attribute: 'Agilidade', modifier: 5 },
         { attribute: 'Força', modifier: -5 },
+        { attribute: 'Defesa', modifier: -5 },
     ]
   },
   // Greek
@@ -113,6 +115,7 @@ export const gameClasses: GameClass[] = [
         { attribute: 'Defesa', modifier: 20 },
         { attribute: 'Força', modifier: 5 },
         { attribute: 'Agilidade', modifier: -10 },
+        { attribute: 'Inteligência', modifier: -5 },
     ]
   },
   {
@@ -126,6 +129,7 @@ export const gameClasses: GameClass[] = [
     attributeModifiers: [
         { attribute: 'Inteligência', modifier: 20 },
         { attribute: 'Defesa', modifier: -5 },
+        { attribute: 'Agilidade', modifier: -5 },
     ]
   },
   // Egyptian
@@ -140,6 +144,8 @@ export const gameClasses: GameClass[] = [
     attributeModifiers: [
         { attribute: 'Agilidade', modifier: 10 },
         { attribute: 'Força', modifier: 5 },
+        { attribute: 'Defesa', modifier: 5 },
+        { attribute: 'Inteligência', modifier: -5 },
     ]
   },
   {
@@ -153,6 +159,8 @@ export const gameClasses: GameClass[] = [
     attributeModifiers: [
         { attribute: 'Inteligência', modifier: 15 },
         { attribute: 'Força', modifier: -5 },
+        { attribute: 'Defesa', modifier: 5 },
+        { attribute: 'Agilidade', modifier: -5 },
     ]
   },
   // Japanese
@@ -168,6 +176,7 @@ export const gameClasses: GameClass[] = [
         { attribute: 'Força', modifier: 10 },
         { attribute: 'Defesa', modifier: 10 },
         { attribute: 'Agilidade', modifier: -5 },
+        { attribute: 'Inteligência', modifier: -5 },
     ]
   },
     {
@@ -181,6 +190,7 @@ export const gameClasses: GameClass[] = [
     attributeModifiers: [
         { attribute: 'Inteligência', modifier: 15 },
         { attribute: 'Agilidade', modifier: 5 },
+        { attribute: 'Defesa', modifier: -5 },
     ]
   },
   // Aztec
@@ -210,6 +220,7 @@ export const gameClasses: GameClass[] = [
         { attribute: 'Inteligência', modifier: 10 },
         { attribute: 'Força', modifier: 5 },
         { attribute: 'Defesa', modifier: -5 },
+        { attribute: 'Agilidade', modifier: -5 },
     ]
   },
 ];
@@ -223,8 +234,9 @@ export const races: Race[] = [
         image: 'aesir-race',
         mythology: 'Norse',
         attributeModifiers: [
-            { attribute: 'Força', modifier: 5 },
+            { attribute: 'Força', modifier: 10 },
             { attribute: 'Inteligência', modifier: -5 },
+            { attribute: 'Defesa', modifier: 5 },
         ]
     },
     {
@@ -234,8 +246,9 @@ export const races: Race[] = [
         image: 'vanir-race',
         mythology: 'Norse',
         attributeModifiers: [
-            { attribute: 'Inteligência', modifier: 5 },
+            { attribute: 'Inteligência', modifier: 10 },
             { attribute: 'Força', modifier: -5 },
+            { attribute: 'Agilidade', modifier: 5 },
         ]
     },
     // Greek
@@ -248,6 +261,7 @@ export const races: Race[] = [
         attributeModifiers: [
             { attribute: 'Força', modifier: 5 },
             { attribute: 'Agilidade', modifier: 5 },
+            { attribute: 'Defesa', modifier: 5 },
         ]
     },
     {
@@ -258,7 +272,7 @@ export const races: Race[] = [
         mythology: 'Greek',
         attributeModifiers: [
             { attribute: 'Agilidade', modifier: 5 },
-            { attribute: 'Inteligência', modifier: 5 },
+            { attribute: 'Inteligência', modifier: 10 },
             { attribute: 'Força', modifier: -5 },
         ]
     },
@@ -270,8 +284,9 @@ export const races: Race[] = [
         image: 'horus-race',
         mythology: 'Egyptian',
         attributeModifiers: [
-            { attribute: 'Agilidade', modifier: 5 },
+            { attribute: 'Agilidade', modifier: 10 },
             { attribute: 'Inteligência', modifier: 5 },
+            { attribute: 'Força', modifier: -5 },
         ]
     },
     {
@@ -281,8 +296,9 @@ export const races: Race[] = [
         image: 'mummy-race',
         mythology: 'Egyptian',
         attributeModifiers: [
-            { attribute: 'Defesa', modifier: 10 },
-            { attribute: 'Agilidade', modifier: -5 },
+            { attribute: 'Defesa', modifier: 15 },
+            { attribute: 'Agilidade', modifier: -10 },
+            { attribute: 'Inteligência', modifier: -5 },
         ]
     },
     // Japanese
@@ -307,7 +323,7 @@ export const races: Race[] = [
         attributeModifiers: [
             { attribute: 'Força', modifier: 10 },
             { attribute: 'Defesa', modifier: 5 },
-            { attribute: 'Inteligência', modifier: -5 },
+            { attribute: 'Inteligência', modifier: -10 },
         ]
     },
     // Aztec
@@ -320,6 +336,7 @@ export const races: Race[] = [
         attributeModifiers: [
             { attribute: 'Agilidade', modifier: 10 },
             { attribute: 'Inteligência', modifier: 5 },
+            { attribute: 'Força', modifier: 5 },
         ]
     },
      {
@@ -331,6 +348,7 @@ export const races: Race[] = [
         attributeModifiers: [
             { attribute: 'Inteligência', modifier: 10 },
             { attribute: 'Defesa', modifier: 5 },
+            { attribute: 'Agilidade', modifier: -5 },
         ]
     },
 ];
