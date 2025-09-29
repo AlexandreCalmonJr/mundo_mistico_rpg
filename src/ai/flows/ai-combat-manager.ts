@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview An AI Combat Manager that controls enemy actions in a turn-based battle.
@@ -49,11 +50,11 @@ Based on the player's action and the current state of both combatants, determine
 Calculate the damage for both the player's action and the enemy's action. The damage should be based on the provided stats. A simple calculation like (Attacker's Attack - Defender's Defense) is a good starting point, with some randomness.
 A character with high defense should take less damage. A character with high attack should deal more.
 
-Generate a response with:
-1.  `enemyAction`: What the enemy does this turn.
-2.  `playerDamage`: Damage the player takes.
-3.  `enemyDamage`: Damage the enemy takes from the player's last action.
-4.  `turnResultNarrative`: A short, engaging summary of the turn's outcome.
+Generate a response with the following fields:
+- 'enemyAction': What the enemy does this turn.
+- 'playerDamage': Damage the player takes.
+- 'enemyDamage': Damage the enemy takes from the player's last action.
+- 'turnResultNarrative': A short, engaging summary of the turn's outcome.
 `,
 });
 
