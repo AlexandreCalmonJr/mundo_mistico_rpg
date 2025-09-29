@@ -12,8 +12,8 @@ import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 
 const GenerateGameContentInputSchema = z.object({
-  contentType: z.string().describe('The type of content to generate (e.g., Classe, Raça, Habilidade, Arma, Mapa, Grupo de Classe).'),
-  prompt: z.string().describe('A text prompt describing the desired content.'),
+  contentType: z.string().describe('The type of content to generate (e.g., Classe, Raça, Habilidade, Arma, Mapa, Grupo de Classe, Temporada).'),
+  prompt: z.string().describe('A text prompt describing the desired content. For a season, describe the theme.'),
 });
 export type GenerateGameContentInput = z.infer<typeof GenerateGameContentInputSchema>;
 
@@ -43,6 +43,7 @@ Sua tarefa é gerar uma estrutura JSON para um novo conteúdo de jogo com base n
 **Prompt do Usuário:** {{{prompt}}}
 
 Responda APENAS com uma string JSON válida no campo 'generatedJson'. Não inclua markdown ou qualquer outro texto fora do JSON.
+O JSON deve ser um objeto único ou um array de objetos, dependendo do que for mais apropriado para a solicitação.
 
 Use as seguintes estruturas como modelo para cada tipo de conteúdo. Preencha todos os campos com valores temáticos e apropriados.
 
@@ -128,6 +129,26 @@ Use as seguintes estruturas como modelo para cada tipo de conteúdo. Preencha to
   "levelRequirement": 20
 }
 \`\`\`
+
+**Se o tipo for "Temporada" ou um tema amplo, gere um array de objetos contendo classes, raças, armas, etc., que se encaixem no tema.**
+Exemplo para "Temporada Fim do Mundo":
+\`\`\`json
+[
+  {
+    "collection": "classes",
+    "data": { "id": "sobrevivente", "name": "Sobrevivente", "description": "...", "mythology": "Post-Apocalyptic" }
+  },
+  {
+    "collection": "races",
+    "data": { "id": "mutante", "name": "Mutante", "description": "...", "mythology": "Post-Apocalyptic" }
+  },
+  {
+    "collection": "weapons",
+    "data": { "id": "cano-enferrujado", "name": "Cano Enferrujado", "description": "...", "type": "Machado", "damage": 12 }
+  }
+]
+\`\`\`
+Neste caso, cada objeto no array deve ter uma chave "collection" (o nome da coleção no Firestore) e uma chave "data" com o conteúdo a ser inserido.
 
 Agora, gere o JSON para o prompt do usuário.
 `,

@@ -18,6 +18,7 @@ const CONTENT_TYPES = [
   { value: 'Arma', label: 'Arma' },
   { value: 'Mapa', label: 'Mapa' },
   { value: 'Grupo de Classe', label: 'Grupo de Classe' },
+  { value: 'Temporada', label: 'Temporada (Beta)' },
 ];
 
 export function ContentGenerator() {
@@ -62,26 +63,39 @@ export function ContentGenerator() {
   const handleImport = async () => {
     setIsImporting(true);
     try {
-      const data = JSON.parse(generatedContent);
-      let collectionName = '';
+      const parsedData = JSON.parse(generatedContent);
 
-      switch (contentType) {
-        case 'Classe': collectionName = 'classes'; break;
-        case 'Raça': collectionName = 'races'; break;
-        case 'Habilidade': collectionName = 'abilities'; break;
-        case 'Arma': collectionName = 'weapons'; break;
-        case 'Mapa': collectionName = 'gameMaps'; break;
-        case 'Grupo de Classe': collectionName = 'classGroups'; break;
-        default:
-          throw new Error('Tipo de conteúdo inválido para importação.');
+      // Handle multi-document import for "Temporada"
+      if (contentType === 'Temporada' && Array.isArray(parsedData)) {
+         for (const item of parsedData) {
+            if (item.collection && item.data) {
+                await addDocument(item.collection, item.data);
+            }
+         }
+         toast({
+            title: 'Temporada importada com sucesso!',
+            description: `Conteúdo da temporada adicionado ao banco de dados. A página será recarregada.`,
+         });
+
+      } else { // Handle single document import
+        let collectionName = '';
+        switch (contentType) {
+            case 'Classe': collectionName = 'classes'; break;
+            case 'Raça': collectionName = 'races'; break;
+            case 'Habilidade': collectionName = 'abilities'; break;
+            case 'Arma': collectionName = 'weapons'; break;
+            case 'Mapa': collectionName = 'gameMaps'; break;
+            case 'Grupo de Classe': collectionName = 'classGroups'; break;
+            default:
+            throw new Error('Tipo de conteúdo inválido para importação individual.');
+        }
+        await addDocument(collectionName, parsedData);
+        toast({
+            title: 'Conteúdo importado com sucesso!',
+            description: `Novo(a) ${contentType} adicionado(a) ao banco de dados. A página será recarregada.`,
+        });
       }
       
-      await addDocument(collectionName, data);
-      
-      toast({
-        title: 'Conteúdo importado com sucesso!',
-        description: `Novo(a) ${contentType} adicionado(a) ao banco de dados. A página será recarregada.`,
-      });
       setGeneratedContent('');
       // Reload the page to reflect the changes in the data table
       window.location.reload();
