@@ -39,7 +39,10 @@ export default function DashboardPage() {
   }
 
   const getAttributeValue = (name: string) => {
-      return character?.attributes.find(a => a.name === name)?.value || 0;
+    if (!character || !character.attributes) {
+      return 0;
+    }
+    return character.attributes.find(a => a.name === name)?.value || 0;
   }
 
   if (!character) {
