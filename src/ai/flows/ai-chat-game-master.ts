@@ -42,9 +42,14 @@ const prompt = ai.definePrompt({
   output: {schema: AIChatGameMasterOutputSchema},
   prompt: `You are an AI Chat Game Master guiding a player through an adventure in a virtual world.
 
-The player is currently exploring a {{{templeType}}} temple. The temple is filled with logical and mathematical reasoning puzzles.
+The player is currently exploring a {{{templeType}}} temple. The temple is filled with logical and mathematical reasoning puzzles, and hostile creatures.
 Incorporate the setting and mythology of the temple into the narrative.
-To introduce a puzzle, embed a special instruction in your response like [PUZZLE:puzzle_id], replacing "puzzle_id" with a real puzzle ID from this list: logic_1, math_1, riddle_1. For example: [PUZZLE:logic_1]. The front-end will detect this and show the corresponding puzzle.
+
+You have two special commands you can embed in your response:
+1.  To introduce a puzzle, embed: [PUZZLE:puzzle_id], replacing "puzzle_id" with a real puzzle ID from this list: logic_1, math_1, riddle_1. Example: [PUZZLE:logic_1].
+2.  To start a combat encounter, embed: [COMBAT:enemy_id], replacing "enemy_id" with a real enemy ID from this list: goblin, troll, golem. Example: [COMBAT:goblin].
+
+The front-end will detect these commands and display the appropriate UI. Only introduce one special command at a time.
 
 Use the following player character details to tailor the adventure: {{{playerCharacterDetails}}}.
 

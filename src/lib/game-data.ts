@@ -29,6 +29,15 @@ export type Weapon = {
   classRequirement: string[]; // Array de IDs de classes
 }
 
+export type Enemy = {
+  id: string;
+  name: string;
+  maxHp: number;
+  currentHp: number;
+  attack: number;
+  defense: number;
+}
+
 export type GameClass = {
   id: string;
   name: string;
@@ -66,6 +75,8 @@ export type Character = {
   xpToNextLevel: number;
   attributePoints: number;
   attributes: Attribute[];
+  maxHp: number;
+  currentHp: number;
 }
 
 export type ClassGroup = {
@@ -260,6 +271,7 @@ export const races: Race[] = [
             { attribute: 'Força', modifier: 10 },
             { attribute: 'Inteligência', modifier: -5 },
             { attribute: 'Defesa', modifier: 5 },
+            { attribute: 'Agilidade', modifier: 0 },
         ]
     },
     {
@@ -272,6 +284,7 @@ export const races: Race[] = [
             { attribute: 'Inteligência', modifier: 10 },
             { attribute: 'Força', modifier: -5 },
             { attribute: 'Agilidade', modifier: 5 },
+            { attribute: 'Defesa', modifier: 0 },
         ]
     },
     // Greek
@@ -312,6 +325,7 @@ export const races: Race[] = [
             { attribute: 'Agilidade', modifier: 10 },
             { attribute: 'Inteligência', modifier: 5 },
             { attribute: 'Força', modifier: -5 },
+            { attribute: 'Defesa', modifier: 0 },
         ]
     },
     {
@@ -338,6 +352,7 @@ export const races: Race[] = [
             { attribute: 'Inteligência', modifier: 10 },
             { attribute: 'Agilidade', modifier: 5 },
             { attribute: 'Força', modifier: -5 },
+            { attribute: 'Defesa', modifier: 0 },
         ]
     },
     {
@@ -350,6 +365,7 @@ export const races: Race[] = [
             { attribute: 'Força', modifier: 10 },
             { attribute: 'Defesa', modifier: 5 },
             { attribute: 'Inteligência', modifier: -10 },
+            { attribute: 'Agilidade', modifier: -5 },
         ]
     },
     // Aztec
@@ -363,6 +379,7 @@ export const races: Race[] = [
             { attribute: 'Agilidade', modifier: 10 },
             { attribute: 'Inteligência', modifier: 5 },
             { attribute: 'Força', modifier: 5 },
+            { attribute: 'Defesa', modifier: -5 },
         ]
     },
      {
@@ -375,6 +392,7 @@ export const races: Race[] = [
             { attribute: 'Inteligência', modifier: 10 },
             { attribute: 'Defesa', modifier: 5 },
             { attribute: 'Agilidade', modifier: -5 },
+            { attribute: 'Força', modifier: 0 },
         ]
     },
 ];
@@ -514,3 +532,30 @@ export const weapons: Weapon[] = [
     classRequirement: ['seidr', 'oracle', 'priest-of-ra', 'onmyoji', 'sun-priest']
   }
 ];
+
+export const enemies: Enemy[] = [
+    {
+        id: 'goblin',
+        name: 'Goblin',
+        maxHp: 50,
+        currentHp: 50,
+        attack: 10,
+        defense: 5,
+    },
+    {
+        id: 'troll',
+        name: 'Troll da Caverna',
+        maxHp: 120,
+        currentHp: 120,
+        attack: 25,
+        defense: 15,
+    },
+    {
+        id: 'golem',
+        name: 'Golem de Pedra',
+        maxHp: 200,
+        currentHp: 200,
+        attack: 20,
+        defense: 30,
+    }
+]

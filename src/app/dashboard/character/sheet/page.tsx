@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Swords, Shield, Wand, ArrowBigUpDash, Sparkles, BookCopy, ShieldPlus, PlusCircle, ArrowUpCircle } from 'lucide-react';
+import { Swords, Shield, Wand, ArrowBigUpDash, Sparkles, BookCopy, ShieldPlus, PlusCircle, ArrowUpCircle, Heart } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const attributeIcons: { [key: string]: React.ElementType } = {
@@ -145,6 +145,8 @@ export default function CharacterSheetPage() {
                 classAttributeModifiers: classInfo.attributeModifiers || [],
             });
 
+            const baseHp = 100 + (result.attributes.find(a => a.name === 'Defesa')?.value || 0) / 2;
+
             const newCharacter: Character = {
               ...parsedChar,
               attributes: result.attributes,
@@ -152,6 +154,8 @@ export default function CharacterSheetPage() {
               xp: 0,
               xpToNextLevel: 100,
               attributePoints: 5,
+              maxHp: baseHp,
+              currentHp: baseHp,
             };
             
             saveCharacter(newCharacter);
@@ -259,10 +263,13 @@ export default function CharacterSheetPage() {
                                 </div>
                                 <Progress value={(character.xp / character.xpToNextLevel) * 100} className="mt-1"/>
                             </div>
-                            <div>
+                            <div className="flex items-center justify-between">
                                 <p className="font-bold">Pontos de Atributo</p>
                                 <p className="text-2xl text-primary font-bold">{character.attributePoints}</p>
-                                <p className="text-xs text-muted-foreground">Use-os para melhorar seus atributos.</p>
+                            </div>
+                             <div className="flex items-center justify-between">
+                                <p className="font-bold flex items-center gap-2"><Heart className="text-red-500"/> Vida</p>
+                                <p className="font-bold">{character.currentHp} / {character.maxHp}</p>
                             </div>
                         </CardContent>
                      </Card>
