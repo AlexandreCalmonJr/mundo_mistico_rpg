@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -10,20 +11,35 @@ import { ShieldPlus } from 'lucide-react';
 import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { GameMap } from '@/lib/game-data';
+import { getCollection } from '@/services/firestore';
+import { useToast } from '@/hooks/use-toast';
 
 export default function AdventurePage() {
   const [selectedMap, setSelectedMap] = useState<GameMap | null>(null);
   const [hasCharacter, setHasCharacter] = useState<boolean | null>(null);
+  const [gameMaps, setGameMaps] = useState<GameMap[]>([]);
+  const [loadingMaps, setLoadingMaps] = useState(true);
   const router = useRouter();
+  const { toast } = useToast();
 
   useEffect(() => {
       const charData = localStorage.getItem('character');
-      if (!charData) {
-          setHasCharacter(false);
-      } else {
-          setHasCharacter(true);
+      setHasCharacter(!!charData);
+      
+      async function fetchMaps() {
+        try {
+          const mapsFromDb = await getCollection<GameMap>('gameMaps');
+          setGameMaps(mapsFromDb);
+        } catch(e) {
+          console.error("Failed to fetch maps", e);
+          toast({ title: "Erro ao buscar mapas", variant: "destructive"});
+        } finally {
+          setLoadingMaps(false);
+        }
       }
-  }, []);
+      fetchMaps();
+
+  }, [toast]);
 
   if (hasCharacter === false) {
       return (
@@ -46,18 +62,24 @@ export default function AdventurePage() {
       )
   }
 
-  if (hasCharacter === null) {
+  if (hasCharacter === null || loadingMaps) {
     return (
         <div className="p-4 sm:p-6 lg:p-8">
             <Skeleton className="h-24 w-full" />
-            <Skeleton className="h-64 w-full mt-4" />
+            <div className="grid mt-8 gap-6 md:grid-cols-2 lg:grid-cols-3">
+              <Skeleton className="h-48 w-full" />
+              <Skeleton className="h-48 w-full" />
+              <Skeleton className="h-48 w-full" />
+            </div>
         </div>
     );
   }
   
   if (!selectedMap) {
-    return <MapSelection onMapSelect={setSelectedMap} />;
+    return <MapSelection gameMaps={gameMaps} onMapSelect={setSelectedMap} />;
   }
 
   return <ChatInterface gameMap={selectedMap} />;
 }
+
+    

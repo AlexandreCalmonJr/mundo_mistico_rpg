@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -12,9 +12,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { gameClasses, races, mythologies } from '@/lib/game-data';
+import { mythologies } from '@/lib/game-data';
+import type { GameClass, Race, Character } from '@/lib/game-data';
+import { getCollection } from '@/services/firestore';
 import { Sparkles } from 'lucide-react';
-import type { Character } from '@/lib/game-data';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const formSchema = z.object({
   name: z.string().min(2, 'O nome deve ter pelo menos 2 caracteres.').max(50, 'O nome deve ter no máximo 50 caracteres.'),
@@ -25,12 +27,34 @@ const formSchema = z.object({
 
 export default function CharacterCreationPage() {
   const router = useRouter();
+  const [gameClasses, setGameClasses] = useState<GameClass[]>([]);
+  const [races, setRaces] = useState<Race[]>([]);
+  const [loading, setLoading] = useState(true);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: '',
     },
   });
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const [classesData, racesData] = await Promise.all([
+          getCollection<GameClass>('classes'),
+          getCollection<Race>('races'),
+        ]);
+        setGameClasses(classesData);
+        setRaces(racesData);
+      } catch (error) {
+        console.error("Failed to fetch creation data:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchData();
+  }, []);
 
   const selectedMythology = form.watch('mythology');
 
@@ -42,8 +66,6 @@ export default function CharacterCreationPage() {
         id: `char-${Date.now()}`,
         ...values,
     }
-    // We remove any existing character sheet data from local storage
-    // to ensure a fresh sheet is generated.
     Object.keys(localStorage).forEach(key => {
         if (key.startsWith('char_')) {
             localStorage.removeItem(key);
@@ -52,6 +74,20 @@ export default function CharacterCreationPage() {
 
     localStorage.setItem('character', JSON.stringify(character));
     router.push('/dashboard/character/sheet');
+  }
+
+  if (loading) {
+    return (
+      <main className="p-4 sm:p-6 lg:p-8"><div className="container mx-auto max-w-2xl space-y-4">
+        <Skeleton className="h-10 w-1/2" />
+        <Skeleton className="h-8 w-3/4" />
+        <Card><CardHeader><Skeleton className="h-6 w-1/3" /></CardHeader><CardContent className="space-y-4">
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+        </CardContent></Card>
+      </div></main>
+    )
   }
 
   return (
@@ -167,3 +203,5 @@ export default function CharacterCreationPage() {
     </main>
   );
 }
+
+    

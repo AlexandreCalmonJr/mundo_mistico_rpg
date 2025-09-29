@@ -1,33 +1,65 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { clans as initialClans } from '@/lib/game-data';
 import type { Clan } from '@/lib/game-data';
 import { Users, UserPlus, PlusCircle } from 'lucide-react';
 import { ClanForm } from '@/components/admin/forms/clan-form';
-
+import { getCollection, addDocument } from '@/services/firestore';
+import { useToast } from '@/hooks/use-toast';
 
 export default function ClansPage() {
-  const [clans, setClans] = useState<Clan[]>(initialClans);
+  const [clans, setClans] = useState<Clan[]>([]);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    async function fetchClans() {
+      try {
+        setLoading(true);
+        const clansFromDb = await getCollection<Clan>('clans');
+        setClans(clansFromDb);
+      } catch (error) {
+        console.error("Failed to fetch clans:", error);
+        toast({
+          title: "Erro ao carregar clãs",
+          description: "Não foi possível buscar os dados dos clãs.",
+          variant: 'destructive',
+        });
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchClans();
+  }, [toast]);
+
 
   const handleJoinClan = (clanId: string) => {
     alert(`Pedido para entrar no clã ${clanId} enviado! (funcionalidade simulada)`);
   };
 
-  const handleSaveClan = (newClanData: Omit<Clan, 'id' | 'members'>) => {
-    const newClan: Clan = {
-      ...newClanData,
-      id: `clan-${Date.now()}`,
-      members: ['Criador'], // Placeholder for the creator
-    };
-    setClans(prevClans => [...prevClans, newClan]);
+  const handleSaveClan = async (newClanData: Omit<Clan, 'id' | 'members'>) => {
+    try {
+      const newClan: Omit<Clan, 'id'> = {
+        ...newClanData,
+        members: [], // Placeholder for the creator
+      };
+      const newId = await addDocument('clans', newClan);
+      setClans(prevClans => [...prevClans, { ...newClan, id: newId }]);
+      toast({title: "Clã criado com sucesso!"});
+    } catch(e) {
+      toast({title: "Erro ao criar clã", variant: "destructive"});
+    }
     setIsCreateDialogOpen(false);
   };
+  
+  if (loading) {
+    return <div className="p-8 text-center">Carregando clãs...</div>;
+  }
 
   return (
     <main className="p-4 sm:p-6 lg:p-8">
@@ -86,3 +118,5 @@ export default function ClansPage() {
     </main>
   );
 }
+
+    

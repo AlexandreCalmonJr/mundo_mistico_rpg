@@ -1,13 +1,14 @@
+
 import type { GameMap } from '@/lib/game-data';
-import { gameMaps } from '@/lib/game-data';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
 interface MapSelectionProps {
   onMapSelect: (map: GameMap) => void;
+  gameMaps: GameMap[];
 }
 
-export function MapSelection({ onMapSelect }: MapSelectionProps) {
+export function MapSelection({ onMapSelect, gameMaps }: MapSelectionProps) {
   return (
     <main className="p-4 sm:p-6 lg:p-8">
       <div className="container mx-auto">
@@ -35,3 +36,5 @@ export function MapSelection({ onMapSelect }: MapSelectionProps) {
     </main>
   );
 }
+
+    

@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, Edit, Trash2, Sparkles } from 'lucide-react';
-import { races as initialRaces, gameMaps as initialMaps, mythologies } from '@/lib/game-data';
+import { mythologies } from '@/lib/game-data';
 import type { GameClass, Race, GameMap, Character, ClassGroup, Clan, AttributeModifier, Ability, Weapon } from '@/lib/game-data';
 import { getCollection, addDocument, updateDocument, deleteDocument } from '@/services/firestore';
 
@@ -55,8 +55,8 @@ const formatModifiers = (modifiers: AttributeModifier[]) => {
 export default function AdminPage() {
   const { toast } = useToast();
   const [gameClasses, setGameClasses] = useState<GameClass[]>([]);
-  const [races, setRaces] = useState<Race[]>(initialRaces);
-  const [gameMaps, setGameMaps] = useState<GameMap[]>(initialMaps);
+  const [races, setRaces] = useState<Race[]>([]);
+  const [gameMaps, setGameMaps] = useState<GameMap[]>([]);
   const [users, setUsers] = useState<any[]>(initialUsers);
   const [classGroups, setClassGroups] = useState<ClassGroup[]>([]);
   const [clans, setClans] = useState<Clan[]>([]);
@@ -71,19 +71,30 @@ export default function AdminPage() {
     async function fetchGameData() {
       try {
         setLoading(true);
-        const [classesFromDb, groupsFromDb, abilitiesFromDb, weaponsFromDb, clansFromDb] = await Promise.all([
+        const [
+            classesFromDb, 
+            racesFromDb,
+            mapsFromDb,
+            groupsFromDb, 
+            abilitiesFromDb, 
+            weaponsFromDb, 
+            clansFromDb
+        ] = await Promise.all([
           getCollection<GameClass>('classes'),
+          getCollection<Race>('races'),
+          getCollection<GameMap>('gameMaps'),
           getCollection<ClassGroup>('classGroups'),
           getCollection<Ability>('abilities'),
           getCollection<Weapon>('weapons'),
           getCollection<Clan>('clans'),
         ]);
         setGameClasses(classesFromDb);
+        setRaces(racesFromDb);
+        setGameMaps(mapsFromDb);
         setClassGroups(groupsFromDb);
         setAbilities(abilitiesFromDb);
         setWeapons(weaponsFromDb);
         setClans(clansFromDb);
-        // Fetch other data types here in the future (races, maps, etc.)
       } catch (error) {
         console.error("Failed to fetch game data:", error);
         toast({
@@ -118,26 +129,19 @@ export default function AdminPage() {
       let collectionName: string = '';
       switch (deleteConfirm.type) {
         case 'class': collectionName = 'classes'; break;
+        case 'race': collectionName = 'races'; break;
+        case 'map': collectionName = 'gameMaps'; break;
         case 'class-group': collectionName = 'classGroups'; break;
         case 'ability': collectionName = 'abilities'; break;
         case 'weapon': collectionName = 'weapons'; break;
         case 'clan': collectionName = 'clans'; break;
-        case 'race':
-          // await deleteDocument('races', deleteConfirm.id);
-          setRaces(prev => prev.filter(item => item.id !== deleteConfirm.id));
-          toast({ title: "Raça excluída com sucesso!" });
-          setDeleteConfirm({ isOpen: false, type: null, id: null });
-          return;
-        case 'map':
-           // await deleteDocument('gameMaps', deleteConfirm.id);
-          setGameMaps(prev => prev.filter(item => item.type !== deleteConfirm.id));
-          toast({ title: "Mapa excluído com sucesso!" });
-          setDeleteConfirm({ isOpen: false, type: null, id: null });
-          return;
         case 'user':
           setUsers(prev => prev.filter(item => item.id !== deleteConfirm.id));
            toast({ title: "Usuário excluído com sucesso!" });
           setDeleteConfirm({ isOpen: false, type: null, id: null });
+          return;
+        default:
+          toast({title: "Tipo inválido", description: "O tipo de dado para exclusão é inválido.", variant: 'destructive'});
           return;
       }
 
@@ -145,6 +149,8 @@ export default function AdminPage() {
       
       switch (deleteConfirm.type) {
          case 'class': setGameClasses(prev => prev.filter(item => item.id !== deleteConfirm.id)); break;
+         case 'race': setRaces(prev => prev.filter(item => item.id !== deleteConfirm.id)); break;
+         case 'map': setGameMaps(prev => prev.filter(item => item.id !== deleteConfirm.id)); break;
          case 'class-group': setClassGroups(prev => prev.filter(item => item.id !== deleteConfirm.id)); break;
          case 'ability': setAbilities(prev => prev.filter(item => item.id !== deleteConfirm.id)); break;
          case 'weapon': setWeapons(prev => prev.filter(item => item.id !== deleteConfirm.id)); break;
@@ -168,49 +174,20 @@ export default function AdminPage() {
 
         switch (type) {
             case 'class':
-                collectionName = 'classes';
-                setData = setGameClasses;
-                successMsg = 'Classe';
-                break;
-            case 'class-group':
-                collectionName = 'classGroups';
-                setData = setClassGroups;
-                successMsg = 'Grupo de Classe';
-                break;
-            case 'ability':
-                collectionName = 'abilities';
-                setData = setAbilities;
-                successMsg = 'Habilidade';
-                break;
-            case 'weapon':
-                collectionName = 'weapons';
-                setData = setWeapons;
-                successMsg = 'Arma';
-                break;
-            case 'clan':
-                collectionName = 'clans';
-                setData = setClans;
-                successMsg = 'Clã';
-                break;
+                collectionName = 'classes'; setData = setGameClasses; successMsg = 'Classe'; break;
             case 'race':
-                if (dialogState.mode === 'add') {
-                    setRaces(prev => [...prev, { ...data, id: `race-${Date.now()}` }]);
-                } else {
-                    setRaces(prev => prev.map(item => item.id === id ? data : item));
-                }
-                toast({ title: "Raça salva com sucesso!" });
-                handleCloseDialog();
-                return;
+                collectionName = 'races'; setData = setRaces; successMsg = 'Raça'; break;
             case 'map':
-                if (dialogState.mode === 'add') {
-                    setGameMaps(prev => [...prev, data]);
-                } else {
-                    setGameMaps(prev => prev.map(item => item.type === data.type ? data : item));
-                }
-                toast({ title: "Mapa salvo com sucesso!" });
-                handleCloseDialog();
-                return;
-             case 'user':
+                collectionName = 'gameMaps'; setData = setGameMaps; successMsg = 'Mapa'; break;
+            case 'class-group':
+                collectionName = 'classGroups'; setData = setClassGroups; successMsg = 'Grupo de Classe'; break;
+            case 'ability':
+                collectionName = 'abilities'; setData = setAbilities; successMsg = 'Habilidade'; break;
+            case 'weapon':
+                collectionName = 'weapons'; setData = setWeapons; successMsg = 'Arma'; break;
+            case 'clan':
+                collectionName = 'clans'; setData = setClans; successMsg = 'Clã'; break;
+            case 'user':
                 if (dialogState.mode === 'add') {
                     setUsers(prev => [...prev, { ...data, id: `user-${Date.now()}` }]);
                 } else {
@@ -219,16 +196,19 @@ export default function AdminPage() {
                 toast({ title: "Usuário salvo com sucesso!" });
                 handleCloseDialog();
                 return;
+            default:
+                toast({title: "Tipo inválido", description: "O tipo de dado para salvar é inválido.", variant: 'destructive'});
+                return;
         }
 
         if (dialogState.mode === 'add') {
             const newId = await addDocument(collectionName, data);
             setData(prev => [...prev, { ...data, id: newId }]);
-            toast({ title: `${successMsg} adicionada com sucesso!` });
+            toast({ title: `${successMsg} adicionado(a) com sucesso!` });
         } else {
             await updateDocument(collectionName, id, data);
             setData(prev => prev.map(item => item.id === id ? data : item));
-            toast({ title: `${successMsg} atualizada com sucesso!` });
+            toast({ title: `${successMsg} atualizado(a) com sucesso!` });
         }
 
     } catch(error) {
@@ -324,7 +304,7 @@ export default function AdminPage() {
           <Button variant="outline" size="sm" onClick={() => handleOpenDialog('edit', 'map', row.original)}>
             <Edit className="h-4 w-4" />
           </Button>
-          <Button variant="destructive" size="sm" onClick={() => handleDelete('map', row.original.type)}>
+          <Button variant="destructive" size="sm" onClick={() => handleDelete('map', row.original.id)}>
             <Trash2 className="h-4 w-4" />
           </Button>
         </div>
@@ -573,3 +553,5 @@ export default function AdminPage() {
     </main>
   );
 }
+
+    

@@ -1,5 +1,6 @@
+
 import { useState, useRef, useEffect } from 'react';
-import type { GameMap } from '@/lib/game-data';
+import type { GameMap, Race, GameClass } from '@/lib/game-data';
 import { aiChatGameMaster } from '@/ai/flows/ai-chat-game-master';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -8,7 +9,8 @@ import { Send, Bot, User, Loader2 } from 'lucide-react';
 import { PuzzleChallenge } from './puzzle-challenge';
 import { CombatInterface } from './combat-interface';
 import type { Character, Enemy } from '@/lib/game-data';
-import { gameClasses, races, enemies } from '@/lib/game-data';
+import { enemies } from '@/lib/game-data';
+import { getCollection } from '@/services/firestore';
 
 interface ChatInterfaceProps {
   gameMap: GameMap;
@@ -31,10 +33,30 @@ export function ChatInterface({ gameMap }: ChatInterfaceProps) {
   const [currentPuzzle, setCurrentPuzzle] = useState<string | null>(null);
   const [combatState, setCombatState] = useState<CombatState>({ active: false, enemy: null });
   const [characterDetails, setCharacterDetails] = useState('');
+  const [races, setRaces] = useState<Race[]>([]);
+  const [gameClasses, setGameClasses] = useState<GameClass[]>([]);
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
    useEffect(() => {
+    async function fetchGameData() {
+        try {
+            const [racesData, classesData] = await Promise.all([
+                getCollection<Race>('races'),
+                getCollection<GameClass>('classes'),
+            ]);
+            setRaces(racesData);
+            setGameClasses(classesData);
+        } catch (error) {
+            console.error("Failed to fetch game data for chat:", error);
+        }
+    }
+    fetchGameData();
+  }, []);
+
+   useEffect(() => {
+    if (races.length === 0 || gameClasses.length === 0) return;
+
     const charData = localStorage.getItem('character');
     let details = 'Aventureiro desconhecido';
     if (charData) {
@@ -48,16 +70,22 @@ export function ChatInterface({ gameMap }: ChatInterfaceProps) {
     const startAdventure = async () => {
       setIsLoading(true);
       const initialMessage = 'Começar a aventura.';
-      const response = await aiChatGameMaster({
-        mapType: gameMap.type,
-        playerCharacterDetails: details,
-        playerMessage: initialMessage,
-      });
-      setMessages([{ role: 'assistant', content: response.gameMasterResponse }]);
-      setIsLoading(false);
+      try {
+        const response = await aiChatGameMaster({
+            mapType: gameMap.type,
+            playerCharacterDetails: details,
+            playerMessage: initialMessage,
+        });
+        setMessages([{ role: 'assistant', content: response.gameMasterResponse }]);
+      } catch (e) {
+          console.error("Failed to start adventure", e);
+          setMessages([{role: 'assistant', content: "O mestre do jogo parece distraído. Tente recarregar a página."}]);
+      } finally {
+        setIsLoading(false);
+      }
     };
     startAdventure();
-  }, [gameMap]);
+  }, [gameMap, races, gameClasses]);
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -96,15 +124,21 @@ export function ChatInterface({ gameMap }: ChatInterfaceProps) {
     setInput('');
     setIsLoading(true);
 
-    const response = await aiChatGameMaster({
-      mapType: gameMap.type,
-      playerCharacterDetails: characterDetails,
-      playerMessage: input,
-    });
-    
-    const processedResponse = handleResponse(response.gameMasterResponse);
-    setMessages([...newMessages, { role: 'assistant', content: processedResponse }]);
-    setIsLoading(false);
+    try {
+        const response = await aiChatGameMaster({
+          mapType: gameMap.type,
+          playerCharacterDetails: characterDetails,
+          playerMessage: input,
+        });
+        
+        const processedResponse = handleResponse(response.gameMasterResponse);
+        setMessages([...newMessages, { role: 'assistant', content: processedResponse }]);
+    } catch(e) {
+        console.error("Failed to send message", e);
+        setMessages([...newMessages, { role: 'assistant', content: "O mestre do jogo está com dor de cabeça e não consegue responder." }]);
+    } finally {
+        setIsLoading(false);
+    }
   };
   
   const handlePuzzleSolved = (reward: string) => {
@@ -191,3 +225,5 @@ export function ChatInterface({ gameMap }: ChatInterfaceProps) {
     </main>
   );
 }
+
+    

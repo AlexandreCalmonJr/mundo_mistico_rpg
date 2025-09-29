@@ -8,29 +8,51 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Users, ShieldPlus, Cog, BookUser, Swords, Shield, Wand, ArrowBigUpDash, Map, Flame, Star } from 'lucide-react';
 import Link from 'next/link';
-import type { Character } from '@/lib/game-data';
-import { gameClasses, races, mythologies } from '@/lib/game-data';
+import type { Character, GameClass, Race } from '@/lib/game-data';
+import { getCollection } from '@/services/firestore';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function DashboardPage() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [character, setCharacter] = useState<Character | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [gameClasses, setGameClasses] = useState<GameClass[]>([]);
+  const [races, setRaces] = useState<Race[]>([]);
 
   useEffect(() => {
-    const adminStatus = localStorage.getItem('isAdmin') === 'true';
-    setIsAdmin(adminStatus);
+    async function fetchData() {
+        const adminStatus = localStorage.getItem('isAdmin') === 'true';
+        setIsAdmin(adminStatus);
 
-    const charData = localStorage.getItem('character');
-    if (charData) {
-      setCharacter(JSON.parse(charData));
-    } else {
-        // Redirect to character creation if no character exists
-        // This is better than creating a default one, as the user should create their own.
-        window.location.href = '/dashboard/character/create';
+        const charData = localStorage.getItem('character');
+        if (charData) {
+            setCharacter(JSON.parse(charData));
+        } else {
+            // Redirect happens client-side to avoid server-side redirect issues with localStorage
+            if (typeof window !== 'undefined') {
+                window.location.href = '/dashboard/character/create';
+            }
+            return;
+        }
+
+        try {
+            const [classesData, racesData] = await Promise.all([
+                getCollection<GameClass>('classes'),
+                getCollection<Race>('races'),
+            ]);
+            setGameClasses(classesData);
+            setRaces(racesData);
+        } catch (error) {
+            console.error("Failed to fetch game data for dashboard:", error);
+        } finally {
+            setLoading(false);
+        }
     }
+    fetchData();
   }, []);
 
   const getCharacterDescription = () => {
-    if (!character) return '';
+    if (!character || !races.length || !gameClasses.length) return '';
     
     const race = races.find(r => r.id === character.race);
     const gameClass = gameClasses.find(gc => gc.id === character.gameClass);
@@ -45,11 +67,13 @@ export default function DashboardPage() {
     return character.attributes.find(a => a.name === name)?.value || 0;
   }
 
-  if (!character) {
+  if (loading || !character) {
     return (
         <main className="p-4 sm:p-6 lg:p-8">
-          <div className="container mx-auto text-center">
-            <p>Carregando dados do personagem...</p>
+          <div className="container mx-auto grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <Skeleton className="h-64 col-span-1" />
+            <Skeleton className="h-64 col-span-1 md:col-span-2" />
+            <Skeleton className="h-64 col-span-1" />
           </div>
         </main>
     );
@@ -181,3 +205,5 @@ export default function DashboardPage() {
     </main>
   );
 }
+
+    

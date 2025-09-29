@@ -4,10 +4,11 @@
 import { useEffect, useState, useCallback } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { gameClasses, races, mythologies } from '@/lib/game-data';
-import type { Character, Attribute } from '@/lib/game-data';
+import { mythologies } from '@/lib/game-data';
+import type { Character, Attribute, Race, GameClass } from '@/lib/game-data';
 import { generateCharacterSheet, GenerateCharacterSheetOutput } from '@/ai/flows/generate-character-sheet';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { getCollection } from '@/services/firestore';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -56,6 +57,25 @@ export default function CharacterSheetPage() {
   const [character, setCharacter] = useState<Character | null>(null);
   const [sheet, setSheet] = useState<Pick<GenerateCharacterSheetOutput, 'backstory' | 'suggestedEquipment' | 'initialAbilities'> | null>(null);
   const [loading, setLoading] = useState(true);
+  const [races, setRaces] = useState<Race[]>([]);
+  const [gameClasses, setGameClasses] = useState<GameClass[]>([]);
+
+  useEffect(() => {
+    async function fetchGameData() {
+        try {
+            const [racesData, classesData] = await Promise.all([
+                getCollection<Race>('races'),
+                getCollection<GameClass>('classes'),
+            ]);
+            setRaces(racesData);
+            setGameClasses(classesData);
+        } catch (error) {
+            console.error("Failed to fetch game data for sheet:", error);
+            toast({ title: "Erro ao carregar dados", description: "Não foi possível carregar os dados de raças e classes.", variant: "destructive"});
+        }
+    }
+    fetchGameData();
+  }, [toast]);
 
   const saveCharacter = (char: Character) => {
     localStorage.setItem('character', JSON.stringify(char));
@@ -103,6 +123,11 @@ export default function CharacterSheetPage() {
       router.push('/dashboard/character/create');
       return;
     }
+
+    if (races.length === 0 || gameClasses.length === 0) {
+        // Data not ready yet
+        return;
+    }
     
     const parsedChar: Character = JSON.parse(charData);
     
@@ -110,8 +135,6 @@ export default function CharacterSheetPage() {
       // Check if the character already has attributes. If so, they have been generated.
       if (parsedChar.attributes && parsedChar.attributes.length > 0) {
         setCharacter(parsedChar);
-        // If we have a backstory, we assume the rest of the sheet is generated.
-        // This is a simplification to avoid re-generating the sheet on every visit.
         const backstory = localStorage.getItem(`char_backstory_${parsedChar.id}`);
         const equipment = localStorage.getItem(`char_equipment_${parsedChar.id}`);
         const abilities = localStorage.getItem(`char_abilities_${parsedChar.id}`);
@@ -134,6 +157,7 @@ export default function CharacterSheetPage() {
 
       if (raceInfo && classInfo && mythologyInfo) {
           try {
+            setLoading(true);
             const result = await generateCharacterSheet({
                 characterName: parsedChar.name,
                 characterMythology: mythologyInfo.name,
@@ -173,12 +197,16 @@ export default function CharacterSheetPage() {
             setLoading(false);
           }
       } else {
+        // This case can happen if data from Firestore is not aligned with char in localStorage
+        console.error("Could not find race or class info for the character.");
+        toast({ title: "Dados Inconsistentes", description: "Não foi possível encontrar informações da raça ou classe do seu personagem. Tente criar um novo.", variant: 'destructive' });
+        router.push('/dashboard/character/create');
         setLoading(false);
       }
     }
 
     loadSheet();
-  }, [router, toast]);
+  }, [router, toast, races, gameClasses]);
 
 
   const handleAttributeIncrease = (attributeName: string) => {
@@ -196,7 +224,7 @@ export default function CharacterSheetPage() {
   };
 
 
-  if (loading || !character || !sheet) {
+  if (loading || !character || !sheet || !races.length || !gameClasses.length) {
       return (
         <main className="p-4 sm:p-6 lg:p-8">
             <div className="container mx-auto max-w-4xl">
@@ -349,3 +377,5 @@ export default function CharacterSheetPage() {
     </main>
   );
 }
+
+    
