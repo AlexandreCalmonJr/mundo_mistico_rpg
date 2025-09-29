@@ -44,6 +44,8 @@ const prompt = ai.definePrompt({
 
 The player is currently exploring a {{{templeType}}} temple. The temple is filled with logical and mathematical reasoning puzzles.
 Incorporate the setting and mythology of the temple into the narrative.
+To introduce a puzzle, embed a special instruction in your response like [PUZZLE:pokemon_name], replacing "pokemon_name" with the name of a real Pokémon (e.g., Pikachu, Charizard, Snorlax). The front-end will detect this and show a puzzle related to that creature.
+
 Use the following player character details to tailor the adventure: {{{playerCharacterDetails}}}.
 
 Player message: {{{playerMessage}}}
