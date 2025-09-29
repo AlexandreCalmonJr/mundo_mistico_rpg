@@ -90,10 +90,10 @@ Use as seguintes estruturas como modelo para cada tipo de conteúdo. Preencha to
   "id": "gerado-pela-ia-id-unico",
   "name": "Nome da Habilidade",
   "description": "O que a habilidade faz.",
-  "type": "Ataque | Defesa | Suporte | Utilidade",
+  "type": "Ataque",
   "cost": 15,
   "levelRequirement": 5,
-  "classId": "id-da-classe-relevante"
+  "classId": ""
 }
 \`\`\`
 
