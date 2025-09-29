@@ -1,3 +1,4 @@
+
 export type GameClass = {
   id: string;
   name: string;
@@ -13,6 +14,12 @@ export type Race = {
   description: string;
   image: string;
 };
+
+export type Temple = {
+    name: string;
+    type: string;
+    description: string;
+}
 
 export const gameClasses: GameClass[] = [
   {
@@ -62,7 +69,7 @@ export const races: Race[] = [
   },
 ];
 
-export const temples = [
+export const temples: Temple[] = [
     {
         name: 'Templo Asteca',
         type: 'Aztec',
