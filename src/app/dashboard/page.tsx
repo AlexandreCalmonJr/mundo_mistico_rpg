@@ -23,28 +23,35 @@ export default function DashboardPage() {
     if (charData) {
       setCharacter(JSON.parse(charData));
     } else {
-        // Create a default character if one doesn't exist for UI purposes
-        const defaultCharacter: Character = {
-            id: 'char-default',
-            name: 'Aventureiro',
-            mythology: 'Norse',
-            race: 'aesir',
-            gameClass: 'berserker',
-            level: 1,
-        };
-        setCharacter(defaultCharacter);
-        localStorage.setItem('character', JSON.stringify(defaultCharacter));
+        // Redirect to character creation if no character exists
+        // This is better than creating a default one, as the user should create their own.
+        window.location.href = '/dashboard/character/create';
     }
   }, []);
 
   const getCharacterDescription = () => {
-    if (!character) return 'Nível 1 Explorador';
+    if (!character) return '';
     
     const race = races.find(r => r.id === character.race);
     const gameClass = gameClasses.find(gc => gc.id === character.gameClass);
     
-    return `${race?.name || ''} ${gameClass?.name || ''} - Nível ${character.level}`;
+    return `${race?.name || ''} ${gameClass?.name || ''}`;
   }
+
+  const getAttributeValue = (name: string) => {
+      return character?.attributes.find(a => a.name === name)?.value || 0;
+  }
+
+  if (!character) {
+    return (
+        <main className="p-4 sm:p-6 lg:p-8">
+          <div className="container mx-auto text-center">
+            <p>Carregando dados do personagem...</p>
+          </div>
+        </main>
+    );
+  }
+
 
   return (
     <main className="p-4 sm:p-6 lg:p-8">
@@ -58,9 +65,11 @@ export default function DashboardPage() {
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="text-center">
-                            <p className="text-sm text-muted-foreground">XP</p>
-                            <Progress value={45} className="mt-1" />
-                            <p className="text-xs text-muted-foreground mt-1">45 / 100 XP</p>
+                             <div className="flex justify-between items-baseline">
+                                <p className="font-bold text-sm">Nível {character.level}</p>
+                                <p className="text-xs text-muted-foreground">{character.xp} / {character.xpToNextLevel} XP</p>
+                            </div>
+                            <Progress value={(character.xp / character.xpToNextLevel) * 100} className="mt-1" />
                         </div>
                         <div className="grid grid-cols-2 gap-4 text-center">
                             <div>
@@ -73,6 +82,11 @@ export default function DashboardPage() {
                             </div>
                         </div>
                     </CardContent>
+                     <CardFooter>
+                        <Button asChild className="w-full">
+                            <Link href="/dashboard/character/sheet">Ver Ficha Completa</Link>
+                        </Button>
+                    </CardFooter>
                 </Card>
             )}
 
@@ -94,30 +108,30 @@ export default function DashboardPage() {
                     </Button>
                 </CardContent>
                  <CardFooter>
-                    <Button variant="outline" className="w-full">Ver Todas as Aventuras</Button>
+                    <Button variant="outline" className="w-full" disabled>Ver Todas as Aventuras</Button>
                 </CardFooter>
             </Card>
 
             <Card className="col-span-1">
                 <CardHeader>
-                    <CardTitle className="font-headline flex items-center gap-2"><Star className="text-primary"/> Habilidades</CardTitle>
+                    <CardTitle className="font-headline flex items-center gap-2"><Star className="text-primary"/> Atributos</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2"><Swords className="text-red-400" size={18}/><span>Ataque</span></div>
-                        <span className="font-bold">15</span>
+                        <div className="flex items-center gap-2"><Swords className="text-primary" size={18}/><span>Força</span></div>
+                        <span className="font-bold">{getAttributeValue('Força')}</span>
                     </div>
                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2"><Shield className="text-blue-400" size={18}/><span>Defesa</span></div>
-                        <span className="font-bold">12</span>
+                        <div className="flex items-center gap-2"><Shield className="text-primary" size={18}/><span>Defesa</span></div>
+                        <span className="font-bold">{getAttributeValue('Defesa')}</span>
                     </div>
                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2"><ArrowBigUpDash className="text-green-400" size={18}/><span>Agilidade</span></div>
-                        <span className="font-bold">18</span>
+                        <div className="flex items-center gap-2"><ArrowBigUpDash className="text-primary" size={18}/><span>Agilidade</span></div>
+                        <span className="font-bold">{getAttributeValue('Agilidade')}</span>
                     </div>
                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2"><Wand className="text-purple-400" size={18}/><span>Magia</span></div>
-                        <span className="font-bold">5</span>
+                        <div className="flex items-center gap-2"><Wand className="text-primary" size={18}/><span>Inteligência</span></div>
+                        <span className="font-bold">{getAttributeValue('Inteligência')}</span>
                     </div>
                 </CardContent>
             </Card>

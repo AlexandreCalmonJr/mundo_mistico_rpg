@@ -1,4 +1,9 @@
 
+export type Attribute = {
+  name: string;
+  value: number;
+};
+
 export type GameClass = {
   id: string;
   name: string;
@@ -30,6 +35,10 @@ export type Character = {
   race: string;
   gameClass: string;
   level: number;
+  xp: number;
+  xpToNextLevel: number;
+  attributePoints: number;
+  attributes: Attribute[];
 }
 
 export type ClassGroup = {

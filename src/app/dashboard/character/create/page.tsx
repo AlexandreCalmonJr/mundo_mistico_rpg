@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -37,11 +38,18 @@ export default function CharacterCreationPage() {
   const availableClasses = gameClasses.filter(gc => gc.mythology === selectedMythology);
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    const character: Character = {
+    const character: Omit<Character, 'level' | 'attributes' | 'xp' | 'xpToNextLevel' | 'attributePoints'> & { level?: number } = {
         id: `char-${Date.now()}`,
         ...values,
-        level: 1,
     }
+    // We remove any existing character sheet data from local storage
+    // to ensure a fresh sheet is generated.
+    Object.keys(localStorage).forEach(key => {
+        if (key.startsWith('char_')) {
+            localStorage.removeItem(key);
+        }
+    });
+
     localStorage.setItem('character', JSON.stringify(character));
     router.push('/dashboard/character/sheet');
   }
