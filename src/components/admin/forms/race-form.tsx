@@ -1,5 +1,5 @@
 
-import { useForm } from 'react-hook-form';
+import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 
@@ -24,6 +24,12 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { mythologies } from '@/lib/game-data';
+import { PlusCircle, Trash2 } from 'lucide-react';
+
+const attributeModifierSchema = z.object({
+    attribute: z.string().min(1, "Atributo é obrigatório."),
+    modifier: z.coerce.number(),
+});
 
 const formSchema = z.object({
   id: z.string().optional(),
@@ -31,6 +37,7 @@ const formSchema = z.object({
   description: z.string().min(10, 'A descrição deve ter pelo menos 10 caracteres.'),
   image: z.string().min(1, "ID da imagem é obrigatório."),
   mythology: z.string({ required_error: 'Por favor, selecione uma mitologia.' }),
+  attributeModifiers: z.array(attributeModifierSchema).optional(),
 });
 
 interface RaceFormProps {
@@ -39,6 +46,8 @@ interface RaceFormProps {
   onSave: (data: z.infer<typeof formSchema>) => void;
   defaultValues: any;
 }
+
+const ATTRIBUTE_OPTIONS = ["Força", "Agilidade", "Inteligência", "Defesa"];
 
 export function RaceForm({ isOpen, onClose, onSave, defaultValues }: RaceFormProps) {
   const form = useForm<z.infer<typeof formSchema>>({
@@ -49,7 +58,13 @@ export function RaceForm({ isOpen, onClose, onSave, defaultValues }: RaceFormPro
       description: defaultValues?.description || '',
       image: defaultValues?.image || '',
       mythology: defaultValues?.mythology || '',
+      attributeModifiers: defaultValues?.attributeModifiers || [],
     },
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "attributeModifiers",
   });
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
@@ -58,7 +73,7 @@ export function RaceForm({ isOpen, onClose, onSave, defaultValues }: RaceFormPro
   
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{defaultValues ? 'Editar Raça' : 'Adicionar Raça'}</DialogTitle>
           <DialogDescription>
@@ -66,7 +81,7 @@ export function RaceForm({ isOpen, onClose, onSave, defaultValues }: RaceFormPro
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 max-h-[80vh] overflow-y-auto pr-4">
             <FormField control={form.control} name="name" render={({ field }) => (
               <FormItem>
                 <FormLabel>Nome</FormLabel>
@@ -110,6 +125,52 @@ export function RaceForm({ isOpen, onClose, onSave, defaultValues }: RaceFormPro
                 <FormMessage />
               </FormItem>
             )} />
+            <div>
+                <FormLabel>Modificadores de Atributo</FormLabel>
+                <div className="space-y-2 mt-2">
+                {fields.map((item, index) => (
+                    <div key={item.id} className="flex items-center gap-2">
+                        <FormField
+                            control={form.control}
+                            name={`attributeModifiers.${index}.attribute`}
+                            render={({ field }) => (
+                                <FormItem className="flex-1">
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <FormControl>
+                                            <SelectTrigger><SelectValue placeholder="Atributo" /></SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            {ATTRIBUTE_OPTIONS.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}
+                                        </SelectContent>
+                                    </Select>
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name={`attributeModifiers.${index}.modifier`}
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormControl><Input type="number" {...field} className="w-20" /></FormControl>
+                                </FormItem>
+                            )}
+                        />
+                        <Button type="button" variant="destructive" size="icon" onClick={() => remove(index)}>
+                            <Trash2 className="h-4 w-4" />
+                        </Button>
+                    </div>
+                ))}
+                </div>
+                 <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="mt-2"
+                    onClick={() => append({ attribute: '', modifier: 0 })}
+                >
+                    <PlusCircle className="mr-2 h-4 w-4" /> Adicionar Modificador
+                </Button>
+            </div>
             <DialogFooter>
               <Button type="button" variant="ghost" onClick={onClose}>Cancelar</Button>
               <Button type="submit">Salvar</Button>

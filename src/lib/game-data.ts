@@ -4,6 +4,11 @@ export type Attribute = {
   value: number;
 };
 
+export type AttributeModifier = {
+    attribute: string;
+    modifier: number;
+}
+
 export type GameClass = {
   id: string;
   name: string;
@@ -12,6 +17,7 @@ export type GameClass = {
   weaknesses: string[];
   image: string;
   mythology: string; // 'Norse', 'Greek', 'Egyptian', etc.
+  attributeModifiers: AttributeModifier[];
 };
 
 export type Race = {
@@ -20,6 +26,7 @@ export type Race = {
   description: string;
   image: string;
   mythology: string; // 'Norse', 'Greek', 'Egyptian', etc.
+  attributeModifiers: AttributeModifier[];
 };
 
 export type Temple = {
@@ -73,6 +80,11 @@ export const gameClasses: GameClass[] = [
     weaknesses: ['Defesa baixa após fúria', 'Sem ataques à distância'],
     image: 'berserker-class',
     mythology: 'Norse',
+    attributeModifiers: [
+        { attribute: 'Força', modifier: 15 },
+        { attribute: 'Defesa', modifier: 5 },
+        { attribute: 'Inteligência', modifier: -5 },
+    ]
   },
   {
     id: 'seidr',
@@ -82,6 +94,11 @@ export const gameClasses: GameClass[] = [
     weaknesses: ['Dano direto baixo', 'Frágil'],
     image: 'seidr-class',
     mythology: 'Norse',
+    attributeModifiers: [
+        { attribute: 'Inteligência', modifier: 15 },
+        { attribute: 'Agilidade', modifier: 5 },
+        { attribute: 'Força', modifier: -5 },
+    ]
   },
   // Greek
   {
@@ -92,6 +109,11 @@ export const gameClasses: GameClass[] = [
     weaknesses: ['Lento', 'Vulnerável a flanqueamento'],
     image: 'hoplite-class',
     mythology: 'Greek',
+    attributeModifiers: [
+        { attribute: 'Defesa', modifier: 20 },
+        { attribute: 'Força', modifier: 5 },
+        { attribute: 'Agilidade', modifier: -10 },
+    ]
   },
   {
     id: 'oracle',
@@ -101,6 +123,10 @@ export const gameClasses: GameClass[] = [
     weaknesses: ['Baixa vida', 'Dependente dos favores divinos'],
     image: 'oracle-class',
     mythology: 'Greek',
+    attributeModifiers: [
+        { attribute: 'Inteligência', modifier: 20 },
+        { attribute: 'Defesa', modifier: -5 },
+    ]
   },
   // Egyptian
   {
@@ -111,6 +137,10 @@ export const gameClasses: GameClass[] = [
     weaknesses: ['Sem especialização extrema', 'Defesa mediana'],
     image: 'medjay-class',
     mythology: 'Egyptian',
+    attributeModifiers: [
+        { attribute: 'Agilidade', modifier: 10 },
+        { attribute: 'Força', modifier: 5 },
+    ]
   },
   {
     id: 'priest-of-ra',
@@ -120,6 +150,10 @@ export const gameClasses: GameClass[] = [
     weaknesses: ['Poder reduzido à noite', 'Armadura leve'],
     image: 'priest-class',
     mythology: 'Egyptian',
+    attributeModifiers: [
+        { attribute: 'Inteligência', modifier: 15 },
+        { attribute: 'Força', modifier: -5 },
+    ]
   },
   // Japanese
   {
@@ -130,6 +164,11 @@ export const gameClasses: GameClass[] = [
     weaknesses: ['Pouco dano em área', 'Rígido código de conduta'],
     image: 'samurai-class',
     mythology: 'Japanese',
+    attributeModifiers: [
+        { attribute: 'Força', modifier: 10 },
+        { attribute: 'Defesa', modifier: 10 },
+        { attribute: 'Agilidade', modifier: -5 },
+    ]
   },
     {
     id: 'onmyoji',
@@ -139,6 +178,10 @@ export const gameClasses: GameClass[] = [
     weaknesses: ['Longo tempo de conjuração', 'Vulnerável sem seus talismãs'],
     image: 'onmyoji-class',
     mythology: 'Japanese',
+    attributeModifiers: [
+        { attribute: 'Inteligência', modifier: 15 },
+        { attribute: 'Agilidade', modifier: 5 },
+    ]
   },
   // Aztec
   {
@@ -149,6 +192,11 @@ export const gameClasses: GameClass[] = [
     weaknesses: ['Armadura leve', 'Suscetível a armadilhas'],
     image: 'jaguar-warrior-class',
     mythology: 'Aztec',
+    attributeModifiers: [
+        { attribute: 'Agilidade', modifier: 15 },
+        { attribute: 'Força', modifier: 10 },
+        { attribute: 'Defesa', modifier: -5 },
+    ]
   },
   {
     id: 'sun-priest',
@@ -158,6 +206,11 @@ export const gameClasses: GameClass[] = [
     weaknesses: ['Requer sacrifício de vida', 'Moralidade questionável'],
     image: 'sun-priest-class',
     mythology: 'Aztec',
+    attributeModifiers: [
+        { attribute: 'Inteligência', modifier: 10 },
+        { attribute: 'Força', modifier: 5 },
+        { attribute: 'Defesa', modifier: -5 },
+    ]
   },
 ];
 
@@ -169,6 +222,10 @@ export const races: Race[] = [
         description: 'Descendentes dos deuses da guerra e do poder, como Odin e Thor. Nascidos para liderar e lutar, com uma afinidade natural para o combate.',
         image: 'aesir-race',
         mythology: 'Norse',
+        attributeModifiers: [
+            { attribute: 'Força', modifier: 5 },
+            { attribute: 'Inteligência', modifier: -5 },
+        ]
     },
     {
         id: 'vanir',
@@ -176,6 +233,10 @@ export const races: Race[] = [
         description: 'Ligados à natureza, magia e prosperidade, os Vanir são um povo mais pacífico, mas ferozes quando protegem suas terras e entes queridos.',
         image: 'vanir-race',
         mythology: 'Norse',
+        attributeModifiers: [
+            { attribute: 'Inteligência', modifier: 5 },
+            { attribute: 'Força', modifier: -5 },
+        ]
     },
     // Greek
     {
@@ -184,6 +245,10 @@ export const races: Race[] = [
         description: 'Filhos de um deus e um mortal, possuem habilidades extraordinárias herdadas de seu parente divino, mas carregam o peso de grandes expectativas.',
         image: 'demigod-race',
         mythology: 'Greek',
+        attributeModifiers: [
+            { attribute: 'Força', modifier: 5 },
+            { attribute: 'Agilidade', modifier: 5 },
+        ]
     },
     {
         id: 'nymph',
@@ -191,6 +256,11 @@ export const races: Race[] = [
         description: 'Espíritos da natureza ligados a uma localização específica, como uma fonte, uma gruta ou uma floresta. São belas, graciosas e protetoras.',
         image: 'nymph-race',
         mythology: 'Greek',
+        attributeModifiers: [
+            { attribute: 'Agilidade', modifier: 5 },
+            { attribute: 'Inteligência', modifier: 5 },
+            { attribute: 'Força', modifier: -5 },
+        ]
     },
     // Egyptian
     {
@@ -199,6 +269,10 @@ export const races: Race[] = [
         description: 'Mortais que carregam a bênção do deus-falcão Hórus. Possuem visão aguçada e um senso inato de justiça e liderança.',
         image: 'horus-race',
         mythology: 'Egyptian',
+        attributeModifiers: [
+            { attribute: 'Agilidade', modifier: 5 },
+            { attribute: 'Inteligência', modifier: 5 },
+        ]
     },
     {
         id: 'risen-mummy',
@@ -206,6 +280,10 @@ export const races: Race[] = [
         description: 'Almas que foram mumificadas e retornaram à vida por um ritual poderoso. São resistentes, imortais e guardam segredos antigos.',
         image: 'mummy-race',
         mythology: 'Egyptian',
+        attributeModifiers: [
+            { attribute: 'Defesa', modifier: 10 },
+            { attribute: 'Agilidade', modifier: -5 },
+        ]
     },
     // Japanese
     {
@@ -214,6 +292,11 @@ export const races: Race[] = [
         description: 'Espíritos de raposa mágicos e inteligentes, conhecidos por suas ilusões, sabedoria e caudas múltiplas que indicam seu poder.',
         image: 'kitsune-race',
         mythology: 'Japanese',
+        attributeModifiers: [
+            { attribute: 'Inteligência', modifier: 10 },
+            { attribute: 'Agilidade', modifier: 5 },
+            { attribute: 'Força', modifier: -5 },
+        ]
     },
     {
         id: 'oni-kin',
@@ -221,6 +304,11 @@ export const races: Race[] = [
         description: 'Humanoides com sangue de demônios Oni, possuem grande força e uma aparência intimidadora, mas nem todos são maus por natureza.',
         image: 'oni-race',
         mythology: 'Japanese',
+        attributeModifiers: [
+            { attribute: 'Força', modifier: 10 },
+            { attribute: 'Defesa', modifier: 5 },
+            { attribute: 'Inteligência', modifier: -5 },
+        ]
     },
     // Aztec
     {
@@ -229,6 +317,10 @@ export const races: Race[] = [
         description: 'Xamãs que possuem a habilidade de se transformar em uma forma animal, geralmente um jaguar, puma ou águia.',
         image: 'nagual-race',
         mythology: 'Aztec',
+        attributeModifiers: [
+            { attribute: 'Agilidade', modifier: 10 },
+            { attribute: 'Inteligência', modifier: 5 },
+        ]
     },
      {
         id: 'born-of-quetzalcoatl',
@@ -236,6 +328,10 @@ export const races: Race[] = [
         description: 'Descendentes da Serpente Emplumada, são sábios e artísticos, com uma conexão profunda com o céu, o conhecimento e a criação.',
         image: 'quetzalcoatl-race',
         mythology: 'Aztec',
+        attributeModifiers: [
+            { attribute: 'Inteligência', modifier: 10 },
+            { attribute: 'Defesa', modifier: 5 },
+        ]
     },
 ];
 

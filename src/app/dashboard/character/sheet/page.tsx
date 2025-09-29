@@ -141,6 +141,8 @@ export default function CharacterSheetPage() {
                 characterClass: classInfo.name,
                 classStrengths: classInfo.strengths,
                 classWeaknesses: classInfo.weaknesses,
+                raceAttributeModifiers: raceInfo.attributeModifiers || [],
+                classAttributeModifiers: classInfo.attributeModifiers || [],
             });
 
             const newCharacter: Character = {

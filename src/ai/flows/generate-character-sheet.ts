@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview An AI flow to generate a complete character sheet for a fantasy RPG.
@@ -9,6 +10,12 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
+import type { AttributeModifier } from '@/lib/game-data';
+
+const AttributeModifierSchema = z.object({
+    attribute: z.string(),
+    modifier: z.number(),
+});
 
 const GenerateCharacterSheetInputSchema = z.object({
   characterName: z.string().describe('The name of the character.'),
@@ -17,6 +24,8 @@ const GenerateCharacterSheetInputSchema = z.object({
   characterClass: z.string().describe('The class of the character (e.g., Berserker, Hoplite, Samurai).'),
   classStrengths: z.array(z.string()).describe('List of strengths for the character\'s class.'),
   classWeaknesses: z.array(z.string()).describe('List of weaknesses for the character\'s class.'),
+  raceAttributeModifiers: z.array(AttributeModifierSchema).describe("Attribute modifiers from the character's race."),
+  classAttributeModifiers: z.array(AttributeModifierSchema).describe("Attribute modifiers from the character's class."),
 });
 export type GenerateCharacterSheetInput = z.infer<typeof GenerateCharacterSheetInputSchema>;
 
@@ -52,13 +61,15 @@ Crie uma ficha de personagem completa para:
 - Raça: {{{characterRace}}}
 - Classe: {{{characterClass}}}
 
-Considere os pontos fortes e fracos da classe e raça ao gerar os atributos:
+Considere os seguintes modificadores de atributos e pontos fortes/fracos para gerar os atributos. Os modificadores devem influenciar fortemente a pontuação base dos atributos.
+- Modificadores da Raça: {{#each raceAttributeModifiers}}{{attribute}}: {{modifier}}{{#unless @last}}, {{/unless}}{{/each}}
+- Modificadores da Classe: {{#each classAttributeModifiers}}{{attribute}}: {{modifier}}{{#unless @last}}, {{/unless}}{{/each}}
 - Pontos Fortes da Classe: {{#each classStrengths}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}
 - Pontos Fracos da Classe: {{#each classWeaknesses}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}
 
 Gere os seguintes detalhes:
 1.  **História (backstory):** Uma história de origem convincente com 2 ou 3 parágrafos. Deve ser sombria e misteriosa, mas com um pingo de esperança. A história deve ser profundamente temática e enraizada na mitologia ({{{characterMythology}}}), raça ({{{characterRace}}}), e classe ({{{characterClass}}}) do personagem.
-2.  **Atributos:** Gere quatro atributos principais: Força, Agilidade, Inteligência e Defesa. Os valores devem ser de 1 a 100 e devem refletir os pontos fortes e fracos da classe e raça do personagem. Por exemplo, um Berserker Nórdico deve ter alta Força mas talvez baixa Inteligência, enquanto um Oráculo Grego deve ter alta Inteligência.
+2.  **Atributos:** Gere quatro atributos principais: Força, Agilidade, Inteligência e Defesa. Os valores devem ser de 1 a 100 e refletir os modificadores fornecidos, bem como os pontos fortes e fracos da classe/raça. Por exemplo, um Berserker Nórdico com modificadores de +15 em Força deve ter um valor de Força muito alto, enquanto um Oráculo Grego com +20 em Inteligência deve ter um valor de Inteligência excepcional.
 3.  **Habilidades Iniciais (initialAbilities):** Crie uma lista de 3 ou 4 nomes de habilidades iniciais que soem únicas e temáticas para a classe, raça e mitologia.
 4.  **Equipamento Sugerido (suggestedEquipment):** Sugira 2 ou 3 peças de equipamento inicial que sejam tematicamente apropriadas para a mitologia. Dê um nome e uma breve descrição para cada item.
 

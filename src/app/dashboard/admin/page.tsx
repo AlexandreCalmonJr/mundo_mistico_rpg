@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, Edit, Trash2 } from 'lucide-react';
 import { gameClasses as initialClasses, races as initialRaces, temples as initialTemples, classGroups as initialClassGroups, clans as initialClans, mythologies } from '@/lib/game-data';
-import type { GameClass, Race, Temple, Character, ClassGroup, Clan } from '@/lib/game-data';
+import type { GameClass, Race, Temple, Character, ClassGroup, Clan, AttributeModifier } from '@/lib/game-data';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DataTable } from '@/components/admin/data-table';
@@ -24,6 +24,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { Badge } from '@/components/ui/badge';
 
 
 const initialUsers: any[] = [
@@ -38,6 +39,11 @@ type DialogState = {
   mode: 'add' | 'edit';
   type: DataType | null;
   data: GameClass | Race | Temple | ClassGroup | Clan | any | null;
+}
+
+const formatModifiers = (modifiers: AttributeModifier[]) => {
+    if (!modifiers || modifiers.length === 0) return 'N/A';
+    return modifiers.map(m => `${m.attribute}: ${m.modifier > 0 ? '+' : ''}${m.modifier}`).join(', ');
 }
 
 export default function AdminPage() {
@@ -165,8 +171,13 @@ export default function AdminPage() {
     { accessorKey: 'name', header: 'Nome' },
     { accessorKey: 'mythology', header: 'Mitologia', cell: ({row}: any) => mythologies.find(m => m.id === row.original.mythology)?.name || 'N/A' },
     { accessorKey: 'description', header: 'Descrição' },
-    { accessorKey: 'strengths', header: 'Pontos Fortes', cell: ({row}: any) => row.original.strengths.join(', ') },
-    { accessorKey: 'weaknesses', header: 'Pontos Fracos', cell: ({row}: any) => row.original.weaknesses.join(', ') },
+    { accessorKey: 'attributeModifiers', header: 'Modificadores', cell: ({row}: any) => (
+        <div className="flex flex-wrap gap-1">
+            {row.original.attributeModifiers.map((mod: AttributeModifier) => (
+                <Badge key={mod.attribute} variant="secondary">{mod.attribute}: {mod.modifier > 0 ? `+${mod.modifier}` : mod.modifier}</Badge>
+            ))}
+        </div>
+    ) },
     {
       id: 'actions',
       cell: ({ row }: { row: { original: any } }) => (
@@ -186,6 +197,13 @@ export default function AdminPage() {
     { accessorKey: 'name', header: 'Nome' },
     { accessorKey: 'mythology', header: 'Mitologia', cell: ({row}: any) => mythologies.find(m => m.id === row.original.mythology)?.name || 'N/A' },
     { accessorKey: 'description', header: 'Descrição' },
+    { accessorKey: 'attributeModifiers', header: 'Modificadores', cell: ({row}: any) => (
+        <div className="flex flex-wrap gap-1">
+            {row.original.attributeModifiers.map((mod: AttributeModifier) => (
+                <Badge key={mod.attribute} variant="secondary">{mod.attribute}: {mod.modifier > 0 ? `+${mod.modifier}` : mod.modifier}</Badge>
+            ))}
+        </div>
+    ) },
     {
       id: 'actions',
       cell: ({ row }: { row: { original: any } }) => (
