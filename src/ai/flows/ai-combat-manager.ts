@@ -10,6 +10,7 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
+import { getRandomPokemonMove } from '@/services/pokeapi';
 
 const AICombatManagerInputSchema = z.object({
   playerCharacterDetails: z.string().describe("A summary of the player's character, including stats."),
@@ -30,31 +31,46 @@ export async function aiCombatManager(input: AICombatManagerInput): Promise<AICo
   return aiCombatManagerFlow(input);
 }
 
+const getRandomPokemonMoveTool = ai.defineTool(
+  {
+    name: 'getRandomPokemonMove',
+    description: 'Busca um golpe de Pokémon aleatório para usar como ataque de um inimigo.',
+    inputSchema: z.object({}),
+    outputSchema: z.string(),
+  },
+  async () => {
+    return await getRandomPokemonMove();
+  }
+)
+
 const prompt = ai.definePrompt({
   name: 'aiCombatManagerPrompt',
   input: { schema: AICombatManagerInputSchema },
   output: { schema: AICombatManagerOutputSchema },
-  prompt: `You are the AI controlling an enemy in a turn-based RPG battle.
-Your goal is to act like a plausible video game enemy.
+  tools: [getRandomPokemonMoveTool],
+  prompt: `Você é a IA controlando um inimigo em uma batalha de RPG por turnos.
+Seu objetivo é agir como um inimigo plausível de videogame.
 
-**Player Character:**
+**Personagem do Jogador:**
 {{{playerCharacterDetails}}}
 
-**Enemy You Are Controlling:**
+**Inimigo que Você Está Controlando:**
 {{{enemyDetails}}}
 
-**Player's Last Action:**
+**Última Ação do Jogador:**
 "{{{playerAction}}}"
 
-Based on the player's action and the current state of both combatants, determine the enemy's next action.
-Calculate the damage for both the player's action and the enemy's action. The damage should be based on the provided stats. A simple calculation like (Attacker's Attack - Defender's Defense) is a good starting point, with some randomness.
-A character with high defense should take less damage. A character with high attack should deal more.
+Baseado na ação do jogador e no estado atual de ambos os combatentes, determine a próxima ação do inimigo.
+Para a ação do inimigo, use a ferramenta 'getRandomPokemonMove' para obter um nome de golpe de Pokémon e incorpore-o criativamente na descrição da ação. Por exemplo, "O goblin usa 'Arranhão' e te ataca com suas garras!".
 
-Generate a response with the following fields:
-- 'enemyAction': What the enemy does this turn.
-- 'playerDamage': Damage the player takes.
-- 'enemyDamage': Damage the enemy takes from the player's last action.
-- 'turnResultNarrative': A short, engaging summary of the turn's outcome.
+Calcule o dano para a ação do jogador e a ação do inimigo. O dano deve ser baseado nas estatísticas fornecidas. Um cálculo simples como (Ataque do Atacante - Defesa do Defensor) é um bom ponto de partida, com alguma aleatoriedade.
+Um personagem com defesa alta deve sofrer menos dano. Um personagem com ataque alto deve causar mais dano.
+
+Gere uma resposta com os seguintes campos:
+- 'enemyAction': O que o inimigo faz neste turno, usando um golpe de Pokémon obtido pela ferramenta.
+- 'playerDamage': Dano que o jogador sofre.
+- 'enemyDamage': Dano que o inimigo sofre da última ação do jogador.
+- 'turnResultNarrative': Um resumo curto e envolvente do resultado do turno.
 `,
 });
 
