@@ -1,4 +1,3 @@
-
 export type Attribute = {
   name: string;
   value: number;
@@ -58,7 +57,7 @@ export type Race = {
   attributeModifiers: AttributeModifier[];
 };
 
-export type Temple = {
+export type GameMap = {
     name: string;
     type: string;
     description: string;
@@ -398,7 +397,7 @@ export const races: Race[] = [
 ];
 
 
-export const temples: Temple[] = [
+export const gameMaps: GameMap[] = [
     {
         name: 'Templo Asteca',
         type: 'Aztec',

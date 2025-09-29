@@ -11,9 +11,9 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const AIChatGameMasterInputSchema = z.object({
-  templeType: z
+  mapType: z
     .string()
-    .describe("The type of temple the player is exploring (e.g., Aztec, Inca, Norse)."),
+    .describe("The type of map the player is exploring (e.g., Aztec, Inca, Norse)."),
   playerCharacterDetails: z
     .string()
     .describe("A summary of the player's character, including name, race, class, and level."),
@@ -42,8 +42,8 @@ const prompt = ai.definePrompt({
   output: {schema: AIChatGameMasterOutputSchema},
   prompt: `You are an AI Chat Game Master guiding a player through an adventure in a virtual world.
 
-The player is currently exploring a {{{templeType}}} temple. The temple is filled with logical and mathematical reasoning puzzles, and hostile creatures.
-Incorporate the setting and mythology of the temple into the narrative.
+The player is currently exploring a {{{mapType}}} themed location. The location is filled with logical and mathematical reasoning puzzles, and hostile creatures.
+Incorporate the setting and mythology of the location into the narrative.
 
 You have two special commands you can embed in your response:
 1.  To introduce a puzzle, embed: [PUZZLE:puzzle_id], replacing "puzzle_id" with a real puzzle ID from this list: logic_1, math_1, riddle_1. Example: [PUZZLE:logic_1].

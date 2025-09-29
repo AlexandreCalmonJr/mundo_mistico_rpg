@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import type { Temple } from '@/app/dashboard/adventure/page';
+import type { GameMap } from '@/lib/game-data';
 import { aiChatGameMaster } from '@/ai/flows/ai-chat-game-master';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -11,7 +11,7 @@ import type { Character, Enemy } from '@/lib/game-data';
 import { gameClasses, races, enemies } from '@/lib/game-data';
 
 interface ChatInterfaceProps {
-  temple: Temple;
+  gameMap: GameMap;
 }
 
 interface Message {
@@ -24,7 +24,7 @@ type CombatState = {
   enemy: Enemy | null;
 }
 
-export function ChatInterface({ temple }: ChatInterfaceProps) {
+export function ChatInterface({ gameMap }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -49,7 +49,7 @@ export function ChatInterface({ temple }: ChatInterfaceProps) {
       setIsLoading(true);
       const initialMessage = 'Começar a aventura.';
       const response = await aiChatGameMaster({
-        templeType: temple.type,
+        mapType: gameMap.type,
         playerCharacterDetails: details,
         playerMessage: initialMessage,
       });
@@ -57,7 +57,7 @@ export function ChatInterface({ temple }: ChatInterfaceProps) {
       setIsLoading(false);
     };
     startAdventure();
-  }, [temple]);
+  }, [gameMap]);
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -97,7 +97,7 @@ export function ChatInterface({ temple }: ChatInterfaceProps) {
     setIsLoading(true);
 
     const response = await aiChatGameMaster({
-      templeType: temple.type,
+      mapType: gameMap.type,
       playerCharacterDetails: characterDetails,
       playerMessage: input,
     });
@@ -124,7 +124,7 @@ export function ChatInterface({ temple }: ChatInterfaceProps) {
   return (
     <main className="h-[calc(100vh-4rem)] flex flex-col">
       <header className="p-4 border-b">
-        <h1 className="text-2xl font-headline font-bold text-primary">{temple.name}</h1>
+        <h1 className="text-2xl font-headline font-bold text-primary">{gameMap.name}</h1>
         <p className="text-sm text-muted-foreground">Uma aventura narrada por IA. Suas ações moldam a história.</p>
       </header>
       

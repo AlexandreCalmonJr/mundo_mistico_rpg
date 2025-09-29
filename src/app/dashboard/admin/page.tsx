@@ -1,17 +1,16 @@
-
 'use client';
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, Edit, Trash2 } from 'lucide-react';
-import { gameClasses as initialClasses, races as initialRaces, temples as initialTemples, classGroups as initialClassGroups, clans as initialClans, mythologies, abilities as initialAbilities, weapons as initialWeapons } from '@/lib/game-data';
-import type { GameClass, Race, Temple, Character, ClassGroup, Clan, AttributeModifier, Ability, Weapon } from '@/lib/game-data';
+import { gameClasses as initialClasses, races as initialRaces, gameMaps as initialMaps, classGroups as initialClassGroups, clans as initialClans, mythologies, abilities as initialAbilities, weapons as initialWeapons } from '@/lib/game-data';
+import type { GameClass, Race, GameMap, Character, ClassGroup, Clan, AttributeModifier, Ability, Weapon } from '@/lib/game-data';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DataTable } from '@/components/admin/data-table';
 import { ClassForm } from '@/components/admin/forms/class-form';
 import { RaceForm } from '@/components/admin/forms/race-form';
-import { TempleForm } from '@/components/admin/forms/temple-form';
+import { MapForm } from '@/components/admin/forms/map-form';
 import { ClassGroupForm } from '@/components/admin/forms/class-group-form';
 import { ClanForm } from '@/components/admin/forms/clan-form';
 import { AbilityForm } from '@/components/admin/forms/ability-form';
@@ -35,12 +34,12 @@ const initialUsers: any[] = [
     { id: 'user-3', name: 'Jogador2', email: 'jogador2@email.com', role: 'Player' },
 ];
 
-type DataType = 'class' | 'race' | 'temple' | 'user' | 'class-group' | 'clan' | 'ability' | 'weapon';
+type DataType = 'class' | 'race' | 'map' | 'user' | 'class-group' | 'clan' | 'ability' | 'weapon';
 type DialogState = {
   isOpen: boolean;
   mode: 'add' | 'edit';
   type: DataType | null;
-  data: GameClass | Race | Temple | ClassGroup | Clan | Ability | Weapon | any | null;
+  data: GameClass | Race | GameMap | ClassGroup | Clan | Ability | Weapon | any | null;
 }
 
 const formatModifiers = (modifiers: AttributeModifier[]) => {
@@ -51,7 +50,7 @@ const formatModifiers = (modifiers: AttributeModifier[]) => {
 export default function AdminPage() {
   const [gameClasses, setGameClasses] = useState<GameClass[]>(initialClasses);
   const [races, setRaces] = useState<Race[]>(initialRaces);
-  const [temples, setTemples] = useState<Temple[]>(initialTemples);
+  const [gameMaps, setGameMaps] = useState<GameMap[]>(initialMaps);
   const [users, setUsers] = useState<any[]>(initialUsers);
   const [classGroups, setClassGroups] = useState<ClassGroup[]>(initialClassGroups);
   const [clans, setClans] = useState<Clan[]>(initialClans);
@@ -62,7 +61,7 @@ export default function AdminPage() {
   const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean, type: DataType | null, id: string | null }>({ isOpen: false, type: null, id: null });
 
 
-  const handleOpenDialog = (mode: 'add' | 'edit', type: DataType, data: GameClass | Race | Temple | ClassGroup | Clan | Ability | Weapon | null = null) => {
+  const handleOpenDialog = (mode: 'add' | 'edit', type: DataType, data: GameClass | Race | GameMap | ClassGroup | Clan | Ability | Weapon | null = null) => {
     setDialogState({ isOpen: true, mode, type, data });
   };
   
@@ -84,8 +83,8 @@ export default function AdminPage() {
       case 'race':
         setRaces(prev => prev.filter(item => item.id !== deleteConfirm.id));
         break;
-      case 'temple':
-        setTemples(prev => prev.filter(item => item.type !== deleteConfirm.id));
+      case 'map':
+        setGameMaps(prev => prev.filter(item => item.type !== deleteConfirm.id));
         break;
       case 'user':
         setUsers(prev => prev.filter(item => item.id !== deleteConfirm.id));
@@ -124,11 +123,11 @@ export default function AdminPage() {
           setRaces(prev => prev.map(item => item.id === id ? data : item));
         }
         break;
-      case 'temple':
+      case 'map':
          if (dialogState.mode === 'add') {
-          setTemples(prev => [...prev, data]);
+          setGameMaps(prev => [...prev, data]);
         } else {
-          setTemples(prev => prev.map(item => item.type === id ? data : item));
+          setGameMaps(prev => prev.map(item => item.type === id ? data : item));
         }
         break;
       case 'user':
@@ -183,7 +182,7 @@ export default function AdminPage() {
     switch (dialogState.type) {
       case 'class': return <ClassForm {...props} />;
       case 'race': return <RaceForm {...props} />;
-      case 'temple': return <TempleForm {...props} />;
+      case 'map': return <MapForm {...props} />;
       case 'class-group': return <ClassGroupForm {...props} gameClasses={gameClasses} />;
       case 'clan': return <ClanForm {...props} />;
       case 'ability': return <AbilityForm {...props} gameClasses={gameClasses}/>;
@@ -245,7 +244,7 @@ export default function AdminPage() {
     },
   ];
 
-  const templeColumns = [
+  const mapColumns = [
     { accessorKey: 'name', header: 'Nome' },
     { accessorKey: 'description', header: 'Descrição' },
     { accessorKey: 'type', header: 'Tipo' },
@@ -253,10 +252,10 @@ export default function AdminPage() {
       id: 'actions',
       cell: ({ row }: { row: { original: any } }) => (
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => handleOpenDialog('edit', 'temple', row.original)}>
+          <Button variant="outline" size="sm" onClick={() => handleOpenDialog('edit', 'map', row.original)}>
             <Edit className="h-4 w-4" />
           </Button>
-          <Button variant="destructive" size="sm" onClick={() => handleDelete('temple', row.original.type)}>
+          <Button variant="destructive" size="sm" onClick={() => handleDelete('map', row.original.type)}>
             <Trash2 className="h-4 w-4" />
           </Button>
         </div>
@@ -383,7 +382,7 @@ export default function AdminPage() {
             <TabsTrigger value="races">Raças</TabsTrigger>
             <TabsTrigger value="abilities">Habilidades</TabsTrigger>
             <TabsTrigger value="weapons">Armas</TabsTrigger>
-            <TabsTrigger value="temples">Templos</TabsTrigger>
+            <TabsTrigger value="maps">Mapas</TabsTrigger>
             <TabsTrigger value="class-groups">Grupos de Classes</TabsTrigger>
             <TabsTrigger value="clans">Clãs</TabsTrigger>
             <TabsTrigger value="users">Usuários</TabsTrigger>
@@ -425,13 +424,13 @@ export default function AdminPage() {
             <DataTable columns={weaponColumns} data={weapons} />
           </TabsContent>
 
-          <TabsContent value="temples">
+          <TabsContent value="maps">
             <div className="flex justify-end mb-4">
-              <Button onClick={() => handleOpenDialog('add', 'temple')}>
-                <PlusCircle className="mr-2 h-4 w-4" /> Adicionar Templo
+              <Button onClick={() => handleOpenDialog('add', 'map')}>
+                <PlusCircle className="mr-2 h-4 w-4" /> Adicionar Mapa
               </Button>
             </div>
-            <DataTable columns={templeColumns} data={temples} />
+            <DataTable columns={mapColumns} data={gameMaps} />
           </TabsContent>
 
            <TabsContent value="class-groups">

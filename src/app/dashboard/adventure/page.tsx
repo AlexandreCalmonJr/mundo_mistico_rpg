@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { TempleSelection } from '@/components/adventure/temple-selection';
+import { MapSelection } from '@/components/adventure/map-selection';
 import { ChatInterface } from '@/components/adventure/chat-interface';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,15 +9,10 @@ import { Button } from '@/components/ui/button';
 import { ShieldPlus } from 'lucide-react';
 import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';
-
-export type Temple = {
-    name: string;
-    type: string;
-    description: string;
-}
+import type { GameMap } from '@/lib/game-data';
 
 export default function AdventurePage() {
-  const [selectedTemple, setSelectedTemple] = useState<Temple | null>(null);
+  const [selectedMap, setSelectedMap] = useState<GameMap | null>(null);
   const [hasCharacter, setHasCharacter] = useState<boolean | null>(null);
   const router = useRouter();
 
@@ -60,9 +55,9 @@ export default function AdventurePage() {
     );
   }
   
-  if (!selectedTemple) {
-    return <TempleSelection onTempleSelect={setSelectedTemple} />;
+  if (!selectedMap) {
+    return <MapSelection onMapSelect={setSelectedMap} />;
   }
 
-  return <ChatInterface temple={selectedTemple} />;
+  return <ChatInterface gameMap={selectedMap} />;
 }
