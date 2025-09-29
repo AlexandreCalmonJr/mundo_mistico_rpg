@@ -1,9 +1,20 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, ShieldPlus } from 'lucide-react';
+import { Users, ShieldPlus, Cog } from 'lucide-react';
 import Link from 'next/link';
 
 export default function DashboardPage() {
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    if (localStorage.getItem('isAdmin') === 'true') {
+      setIsAdmin(true);
+    }
+  }, []);
+
   return (
     <main className="p-4 sm:p-6 lg:p-8">
       <div className="container mx-auto">
@@ -46,6 +57,29 @@ export default function DashboardPage() {
                 </Button>
             </CardContent>
           </Card>
+          
+          {isAdmin && (
+            <Card className="flex flex-col border-accent/20">
+              <CardHeader>
+                  <div className="flex items-center gap-4">
+                    <div className="bg-accent/10 p-3 rounded-md">
+                      <Cog className="size-6 text-accent" />
+                    </div>
+                    <CardTitle className="font-headline text-2xl text-accent">Painel Admin</CardTitle>
+                  </div>
+                  <CardDescription>Gerencie as configurações do jogo.</CardDescription>
+              </CardHeader>
+              <CardContent className="flex-grow flex flex-col items-center justify-center text-center">
+                  <p className="text-muted-foreground mb-4">Acesse a área de administração.</p>
+                  <Button asChild variant="outline">
+                      <Link href="/dashboard/admin">
+                          Ir para Admin
+                      </Link>
+                  </Button>
+              </CardContent>
+            </Card>
+          )}
+
         </div>
       </div>
     </main>

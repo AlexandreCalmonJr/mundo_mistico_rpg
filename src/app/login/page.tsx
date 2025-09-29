@@ -20,8 +20,10 @@ export default function LoginPage() {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     if (email === 'admin@mundomitico.com' && password === 'admin123') {
+      localStorage.setItem('isAdmin', 'true');
       router.push('/dashboard');
     } else {
+      localStorage.removeItem('isAdmin');
       toast({
         title: 'Credenciais inválidas',
         description: 'Por favor, verifique seu e-mail e senha.',
