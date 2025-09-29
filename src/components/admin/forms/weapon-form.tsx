@@ -36,7 +36,7 @@ const formSchema = z.object({
   type: z.enum(WEAPON_TYPES as [string, ...string[]]),
   damage: z.coerce.number().min(0, 'O dano deve ser 0 ou mais.'),
   rarity: z.enum(RARITIES as [string, ...string[]]),
-  classRequirement: z.array(z.string()).refine((value) => value.some((item) => item), {
+  classRequirement: z.array(z.string()).refine((value) => value.length > 0, {
     message: 'Você deve selecionar pelo menos uma classe.',
   }),
 });
@@ -121,6 +121,7 @@ export function WeaponForm({ isOpen, onClose, onSave, defaultValues, gameClasses
                         Selecione as classes que podem equipar esta arma.
                         </FormDescription>
                     </div>
+                    <div className="space-y-2">
                     {gameClasses.map((item) => (
                         <FormField
                         key={item.id}
@@ -137,7 +138,7 @@ export function WeaponForm({ isOpen, onClose, onSave, defaultValues, gameClasses
                                     checked={field.value?.includes(item.id)}
                                     onCheckedChange={(checked) => {
                                     return checked
-                                        ? field.onChange([...field.value, item.id])
+                                        ? field.onChange([...(field.value || []), item.id])
                                         : field.onChange(
                                             field.value?.filter(
                                             (value) => value !== item.id
@@ -154,11 +155,12 @@ export function WeaponForm({ isOpen, onClose, onSave, defaultValues, gameClasses
                         }}
                         />
                     ))}
+                    </div>
                     <FormMessage />
                     </FormItem>
                 )}
                 />
-            <DialogFooter>
+            <DialogFooter className="mt-4 pt-4 border-t">
               <Button type="button" variant="ghost" onClick={onClose}>Cancelar</Button>
               <Button type="submit">Salvar</Button>
             </DialogFooter>
