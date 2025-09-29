@@ -13,37 +13,54 @@ import {
   SidebarTrigger,
   SidebarFooter,
 } from '@/components/ui/sidebar';
-import { Logo } from '@/components/icons/logo';
 import { Button } from '../ui/button';
-import { LayoutDashboard, Swords, UserPlus, BrainCircuit, LogOut, BookUser, Users } from 'lucide-react';
+import { LayoutDashboard, User, Map, MessageSquare, Users, Crown, LogOut, Sparkles, Shield } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+
 
 const menuItems = [
-  { href: '/dashboard', label: 'Painel', icon: LayoutDashboard },
-  { href: '/dashboard/character/sheet', label: 'Meu Personagem', icon: BookUser },
-  { href: '/dashboard/character/create', label: 'Criar Personagem', icon: UserPlus },
-  { href: '/dashboard/classes', label: 'Classes e Raças', icon: Swords },
-  { href: '/dashboard/clans', label: 'Clãs', icon: Users },
-  { href: '/dashboard/adventure', label: 'Aventura', icon: BrainCircuit },
+  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/dashboard/character/sheet', label: 'Character', icon: User },
+  { href: '/dashboard/adventure', label: 'Adventures', icon: Map },
+  { href: '/dashboard/chat', label: 'Chat', icon: MessageSquare },
+  { href: '/dashboard/clans', label: 'Groups', icon: Users },
+  { href: '/dashboard/admin', label: 'Admin', icon: Crown },
 ];
+
+function SidebarLogo() {
+  return (
+    <Link href="/dashboard" className="flex items-center gap-3">
+        <div className="bg-primary p-2 rounded-lg">
+            <Sparkles className="text-primary-foreground" />
+        </div>
+        <div>
+            <h2 className="font-headline text-lg text-foreground">Mythic Realms</h2>
+            <p className="text-xs text-muted-foreground">MMORPG Adventure</p>
+        </div>
+    </Link>
+  );
+}
+
 
 export function MainSidebar() {
   const pathname = usePathname();
 
   return (
-    <Sidebar>
+    <Sidebar variant="inset" collapsible="icon">
       <SidebarHeader>
-        <div className="flex items-center justify-between">
-          <Logo />
-          <SidebarTrigger />
-        </div>
+        <SidebarLogo />
+        <SidebarTrigger className="md:hidden" />
       </SidebarHeader>
       <SidebarContent>
+        <div className="mb-4 ml-2 mt-2">
+            <p className="text-xs font-semibold text-muted-foreground tracking-wider">NAVIGATION</p>
+        </div>
         <SidebarMenu>
           {menuItems.map((item) => (
             <SidebarMenuItem key={item.href}>
               <SidebarMenuButton
                 asChild
-                isActive={pathname.startsWith(item.href) && (item.href !== '/dashboard' || pathname === '/dashboard')}
+                isActive={pathname === item.href}
                 tooltip={item.label}
               >
                 <Link href={item.href}>
@@ -56,10 +73,20 @@ export function MainSidebar() {
         </SidebarMenu>
       </SidebarContent>
       <SidebarFooter>
-          <Button asChild variant="ghost" className="w-full justify-start gap-2">
+         <div className="flex items-center gap-3">
+            <Avatar>
+                <AvatarImage src="https://picsum.photos/seed/adventurer/40/40" />
+                <AvatarFallback>AV</AvatarFallback>
+            </Avatar>
+            <div className="flex flex-col">
+                <span className="text-sm font-semibold">Adventurer</span>
+                <span className="text-xs text-muted-foreground">Level 1 Explorer</span>
+            </div>
+         </div>
+         <Button asChild variant="ghost" className="w-full justify-start gap-2">
             <Link href="/">
                 <LogOut className="size-4" />
-                <span>Sair</span>
+                <span className="group-data-[collapsible=icon]:hidden">Sign Out</span>
             </Link>
         </Button>
       </SidebarFooter>
