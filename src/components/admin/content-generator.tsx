@@ -45,9 +45,10 @@ export function ContentGenerator() {
       setGeneratedContent(result.generatedJson);
     } catch (error) {
       console.error('Failed to generate content:', error);
+      const errorMessage = error instanceof Error ? error.message : 'A IA não conseguiu processar sua solicitação. Tente novamente.';
       toast({
         title: 'Erro ao gerar conteúdo',
-        description: 'A IA não conseguiu processar sua solicitação. Tente novamente.',
+        description: errorMessage,
         variant: 'destructive',
       });
     } finally {

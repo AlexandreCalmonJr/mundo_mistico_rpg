@@ -42,7 +42,7 @@ Sua tarefa é gerar uma estrutura JSON para um novo conteúdo de jogo com base n
 **Tipo de Conteúdo:** {{{contentType}}}
 **Prompt do Usuário:** {{{prompt}}}
 
-Responda APENAS com uma string JSON válida no campo 'generatedJson'. Não inclua markdown ou qualquer outro texto fora do JSON.
+Responda APENAS com uma string JSON válida e completa no campo 'generatedJson'. Não inclua markdown (como \`\`\`json), comentários ou qualquer outro texto explicativo fora da string JSON.
 O JSON deve ser um objeto único ou um array de objetos, dependendo do que for mais apropriado para a solicitação.
 
 Use as seguintes estruturas como modelo para cada tipo de conteúdo. Preencha todos os campos com valores temáticos e apropriados.
@@ -50,7 +50,6 @@ Use as seguintes estruturas como modelo para cada tipo de conteúdo. Preencha to
 **Estruturas de Exemplo:**
 
 **Se o tipo for "Classe":**
-\`\`\`json
 {
   "id": "gerado-pela-ia-id-unico",
   "name": "Nome da Classe",
@@ -66,10 +65,8 @@ Use as seguintes estruturas como modelo para cada tipo de conteúdo. Preencha to
     { "attribute": "Defesa", "modifier": 0 }
   ]
 }
-\`\`\`
 
 **Se o tipo for "Raça":**
-\`\`\`json
 {
   "id": "gerado-pela-ia-id-unico",
   "name": "Nome da Raça",
@@ -83,10 +80,8 @@ Use as seguintes estruturas como modelo para cada tipo de conteúdo. Preencha to
     { "attribute": "Defesa", "modifier": 0 }
   ]
 }
-\`\`\`
 
 **Se o tipo for "Habilidade":**
-\`\`\`json
 {
   "id": "gerado-pela-ia-id-unico",
   "name": "Nome da Habilidade",
@@ -96,10 +91,8 @@ Use as seguintes estruturas como modelo para cada tipo de conteúdo. Preencha to
   "levelRequirement": 5,
   "classId": ""
 }
-\`\`\`
 
 **Se o tipo for "Arma":**
-\`\`\`json
 {
   "id": "gerado-pela-ia-id-unico",
   "name": "Nome da Arma",
@@ -109,30 +102,24 @@ Use as seguintes estruturas como modelo para cada tipo de conteúdo. Preencha to
   "rarity": "Comum | Incomum | Raro | Épico | Lendário",
   "classRequirement": ["id-da-classe-1", "id-da-classe-2"]
 }
-\`\`\`
 
 **Se o tipo for "Mapa":**
-\`\`\`json
 {
     "name": "Nome do Mapa",
     "type": "IdUnicoDoMapa",
     "description": "Descrição do mapa ou aventura."
 }
-\`\`\`
 
 **Se o tipo for "Grupo de Classe":**
-\`\`\`json
 {
   "id": "gerado-pela-ia-id-unico",
   "name": "Nome do Grupo/Evolução",
   "baseClassId": "id-da-classe-base",
   "levelRequirement": 20
 }
-\`\`\`
 
 **Se o tipo for "Temporada" ou um tema amplo, gere um array de objetos contendo classes, raças, armas, etc., que se encaixem no tema.**
 Exemplo para "Temporada Fim do Mundo":
-\`\`\`json
 [
   {
     "collection": "classes",
@@ -147,7 +134,6 @@ Exemplo para "Temporada Fim do Mundo":
     "data": { "id": "cano-enferrujado", "name": "Cano Enferrujado", "description": "...", "type": "Machado", "damage": 12 }
   }
 ]
-\`\`\`
 Neste caso, cada objeto no array deve ter uma chave "collection" (o nome da coleção no Firestore) e uma chave "data" com o conteúdo a ser inserido.
 
 Agora, gere o JSON para o prompt do usuário.
@@ -168,11 +154,13 @@ const generateGameContentFlow = ai.defineFlow(
     // Attempt to parse the JSON to ensure it's valid before returning.
     // This can help catch malformed JSON from the LLM.
     try {
-      JSON.parse(output.generatedJson);
+      // Clean the response in case the AI wraps it in markdown
+      const cleanedJson = output.generatedJson.replace(/^```json\n|```$/g, '');
+      JSON.parse(cleanedJson);
+      return { generatedJson: cleanedJson };
     } catch (e) {
       console.error("A IA retornou um JSON inválido:", output.generatedJson);
       throw new Error("A resposta da IA não era um JSON válido.");
     }
-    return output;
   }
 );
