@@ -19,7 +19,7 @@ export default function LoginPage() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (email === 'admin' && password === 'admin123') {
+    if (email === 'admin@mundomitico.com' && password === 'admin123') {
       router.push('/dashboard');
     } else {
       toast({
