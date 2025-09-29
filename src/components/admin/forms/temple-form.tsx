@@ -24,7 +24,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 
 const formSchema = z.object({
-  type: z.string().optional(),
+  type: z.string().min(1, 'O tipo é obrigatório.'),
   name: z.string().min(2, 'O nome deve ter pelo menos 2 caracteres.'),
   description: z.string().min(10, 'A descrição deve ter pelo menos 10 caracteres.'),
 });
@@ -40,7 +40,7 @@ export function TempleForm({ isOpen, onClose, onSave, defaultValues }: TempleFor
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      type: defaultValues?.type || undefined,
+      type: defaultValues?.type || '',
       name: defaultValues?.name || '',
       description: defaultValues?.description || '',
     },

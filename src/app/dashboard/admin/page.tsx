@@ -90,7 +90,7 @@ export default function AdminPage() {
         break;
       case 'temple':
          if (dialogState.mode === 'add') {
-          setTemples(prev => [...prev, { ...data, type: `temple-${Date.now()}` }]);
+          setTemples(prev => [...prev, data]);
         } else {
           setTemples(prev => prev.map(item => item.type === id ? data : item));
         }
@@ -118,7 +118,7 @@ export default function AdminPage() {
   }
 
   const columns = (type: DataType) => [
-    { accessorKey: type === 'temple' ? 'name' : 'name', header: 'Nome' },
+    { accessorKey: 'name', header: 'Nome' },
     { accessorKey: 'description', header: 'Descrição' },
     {
       id: 'actions',
