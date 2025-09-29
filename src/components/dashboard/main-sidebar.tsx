@@ -13,7 +13,7 @@ import {
   SidebarFooter,
 } from '@/components/ui/sidebar';
 import { Button } from '../ui/button';
-import { LayoutDashboard, User, Map, MessageSquare, Users2, Crown, LogOut, Sparkles, Swords, ShieldPlus } from 'lucide-react';
+import { LayoutDashboard, User, Map, MessageSquare, Users2, Crown, LogOut, Sparkles, Swords, ShieldPlus, GitMerge } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { useEffect, useState } from 'react';
 
@@ -23,6 +23,7 @@ const menuItems = [
   { href: '/dashboard/character/sheet', label: 'Meu Personagem', icon: User },
   { href: '/dashboard/character/create', label: 'Criar Personagem', icon: ShieldPlus },
   { href: '/dashboard/classes', label: 'Classes e Raças', icon: Swords },
+  { href: '/dashboard/evolutions', label: 'Evoluções', icon: GitMerge },
   { href: '/dashboard/clans', label: 'Clãs', icon: Users2 },
   { href: '/dashboard/adventure', label: 'Aventura', icon: Map },
   { href: '/dashboard/chat', label: 'Chat Global', icon: MessageSquare },
