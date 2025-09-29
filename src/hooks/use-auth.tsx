@@ -17,6 +17,7 @@ interface AuthContextType {
   loading: boolean;
   isAdmin: boolean;
   signInWithGoogle: () => Promise<void>;
+  adminLogin: (email: string, pass: string) => void;
   logout: () => Promise<void>;
   saveCharacter: (characterData: Character) => Promise<void>;
 }
@@ -24,7 +25,6 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const protectedRoutes = ['/dashboard'];
-const adminLoginRoute = '/login/admin'; // A separate route for initial admin setup if needed
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -37,11 +37,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setLoading(true);
+      
+      const localAdmin = sessionStorage.getItem('isAdmin') === 'true';
+      
       if (user) {
         setUser(user);
         
         const adminStatus = await checkAdminStatus(user.uid);
-        setIsAdmin(adminStatus);
+        setIsAdmin(adminStatus || localAdmin);
 
         const char = await getDocument<Character>('characters', user.uid);
         setCharacter(char);
@@ -53,6 +56,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             router.push('/dashboard');
         }
 
+      } else if (localAdmin) {
+        setUser(null);
+        setCharacter(null);
+        setIsAdmin(true);
+        // keep admin logged in
       } else {
         setUser(null);
         setCharacter(null);
@@ -73,15 +81,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const provider = new GoogleAuthProvider();
     try {
       await signInWithPopup(auth, provider);
-      // onAuthStateChanged will handle the redirect
     } catch (error) {
       console.error("Error signing in with Google: ", error);
     }
   };
 
+  const adminLogin = (email: string, pass: string) => {
+    if (email === 'admin@mundomitico.com' && pass === 'admin123') {
+        sessionStorage.setItem('isAdmin', 'true');
+        setIsAdmin(true);
+        setUser(null); 
+        setCharacter(null);
+    } else {
+        throw new Error('Credenciais de administrador inválidas.');
+    }
+  };
+
   const logout = async () => {
     await signOut(auth);
-    // onAuthStateChanged will handle the redirect
+    sessionStorage.removeItem('isAdmin');
+    setIsAdmin(false);
   };
   
   const saveCharacter = async (characterData: Character) => {
@@ -92,7 +111,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }
 
   return (
-    <AuthContext.Provider value={{ user, character, loading, isAdmin, signInWithGoogle, logout, saveCharacter }}>
+    <AuthContext.Provider value={{ user, character, loading, isAdmin, signInWithGoogle, adminLogin, logout, saveCharacter }}>
       {children}
     </AuthContext.Provider>
   );
