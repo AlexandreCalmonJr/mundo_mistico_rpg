@@ -1,71 +1,62 @@
 import { useState, useEffect } from 'react';
-import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Loader2, Brain, Lightbulb, AlertTriangle, CheckCircle } from 'lucide-react';
 
 interface PuzzleChallengeProps {
-  pokemonId: string;
+  puzzleId: string;
   onSolved: (reward: string) => void;
 }
 
-type PokemonData = {
-  name: string;
-  sprites: {
-    front_default: string;
-  };
-  stats: {
-    base_stat: number;
-    stat: {
-      name: string;
-    };
-  }[];
-  types: {
-    type: {
-      name: string;
-    };
-  }[];
+type Puzzle = {
+    id: string;
+    type: 'lógica' | 'matemática' | 'charada';
+    question: string;
+    answer: string;
+    reward: string;
+    imageUrl?: string;
+    imageAlt?: string;
 };
 
-export function PuzzleChallenge({ pokemonId, onSolved }: PuzzleChallengeProps) {
-  const [pokemon, setPokemon] = useState<PokemonData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+const puzzles: Puzzle[] = [
+    {
+        id: 'logic_1',
+        type: 'lógica',
+        question: 'Um pai tem 5 filhos. Quatro se chamam Trovão, Trovão, Trovão, e Trovão. Qual é o nome do quinto filho?',
+        answer: 'Qual',
+        reward: 'Amuleto da Perspicácia',
+    },
+    {
+        id: 'math_1',
+        type: 'matemática',
+        question: 'Qual é o próximo número na sequência: 1, 1, 2, 3, 5, 8, __?',
+        answer: '13',
+        reward: 'Poção de Inteligência',
+    },
+    {
+        id: 'riddle_1',
+        type: 'charada',
+        question: 'O que tem um olho mas não pode ver?',
+        answer: 'Agulha',
+        reward: 'Pergaminho da Visão Verdadeira',
+    }
+];
+
+export function PuzzleChallenge({ puzzleId, onSolved }: PuzzleChallengeProps) {
+  const [puzzle, setPuzzle] = useState<Puzzle | null>(null);
   const [answer, setAnswer] = useState('');
   const [feedback, setFeedback] = useState<{type: 'error' | 'success', message: string} | null>(null);
 
   useEffect(() => {
-    const fetchPokemon = async () => {
-      setLoading(true);
-      setError(null);
-      setFeedback(null);
-      try {
-        const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonId.toLowerCase()}`);
-        if (!response.ok) {
-          throw new Error('Criatura mítica não encontrada.');
-        }
-        const data = await response.json();
-        setPokemon(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Falha ao carregar o desafio.');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchPokemon();
-  }, [pokemonId]);
-  
-  const getStat = (name: string) => pokemon?.stats.find(s => s.stat.name === name)?.base_stat ?? 0;
-  
-  const puzzle = {
-      question: `Para decifrar o glifo, some a 'velocidade' base desta criatura com seu 'ataque' base. Qual é o resultado?`,
-      calculateAnswer: () => (pokemon ? getStat('speed') + getStat('attack') : 0).toString(),
-      reward: 'Poção de Agilidade'
-  };
+    const currentPuzzle = puzzles.find(p => p.id === puzzleId) || null;
+    setPuzzle(currentPuzzle);
+    setAnswer('');
+    setFeedback(null);
+  }, [puzzleId]);
 
   const checkAnswer = () => {
-    if (answer === puzzle.calculateAnswer()) {
+    if (puzzle && answer.toLowerCase().trim() === puzzle.answer.toLowerCase().trim()) {
         setFeedback({type: 'success', message: 'Correto! O caminho se abre.'});
         setTimeout(() => {
             onSolved(puzzle.reward);
@@ -75,68 +66,57 @@ export function PuzzleChallenge({ pokemonId, onSolved }: PuzzleChallengeProps) {
         setAnswer('');
     }
   };
-
-  if (loading) {
-    return (
-      <Card className="h-full flex items-center justify-center">
-        <Loader2 className="size-8 animate-spin text-primary" />
-      </Card>
-    );
-  }
-
-  if (error) {
+  
+  if (!puzzle) {
     return (
         <Card className="h-full flex flex-col items-center justify-center text-center p-4">
             <AlertTriangle className="size-8 text-destructive mb-2" />
-            <p className="font-semibold">Erro no Desafio</p>
-            <p className="text-sm text-muted-foreground">{error}</p>
+            <p className="font-semibold">Erro no Enigma</p>
+            <p className="text-sm text-muted-foreground">O enigma solicitado não foi encontrado.</p>
         </Card>
     );
   }
 
-  if (pokemon) {
-    return (
-      <Card className="h-full flex flex-col">
-        <CardHeader>
-          <CardTitle className="font-headline flex items-center gap-2"><Brain className="text-primary"/> Enigma Ancestral</CardTitle>
-          <CardDescription>Uma entidade mítica bloqueia seu caminho.</CardDescription>
-        </CardHeader>
-        <CardContent className="flex-grow flex flex-col items-center text-center">
-          <Image src={pokemon.sprites.front_default} alt={pokemon.name} width={96} height={96} className="mb-4 bg-primary/10 rounded-full" />
-          <p className="font-semibold capitalize text-lg">{pokemon.name}</p>
-          <p className="text-sm text-muted-foreground mb-4">
-            Tipo: {pokemon.types.map(t => t.type.name).join(', ')}
-          </p>
+  return (
+    <Card className="h-full flex flex-col">
+      <CardHeader>
+        <CardTitle className="font-headline flex items-center gap-2"><Brain className="text-primary"/> Enigma Ancestral</CardTitle>
+        <CardDescription>Um desafio bloqueia seu caminho. Resolva-o para prosseguir.</CardDescription>
+      </CardHeader>
+      <CardContent className="flex-grow flex flex-col items-center text-center">
+        <div className="bg-secondary p-4 rounded-lg w-full mb-6 text-center">
+          <p className="text-sm font-semibold capitalize mb-1">({puzzle.type})</p>
+          <p className="text-base">{puzzle.question}</p>
+        </div>
 
-          <div className="bg-secondary p-3 rounded-lg w-full mb-4">
-            <p className="text-sm">{puzzle.question}</p>
-          </div>
-
-          <div className="flex w-full max-w-sm items-center space-x-2">
-            <Input 
-                type="text" 
-                placeholder="Sua resposta"
-                value={answer}
-                onChange={(e) => setAnswer(e.target.value)}
-                disabled={!!feedback && feedback.type === 'success'}
-            />
-            <Button 
-                onClick={checkAnswer}
-                disabled={!answer || (!!feedback && feedback.type === 'success')}
-            >
-                <Lightbulb className="size-4" />
-            </Button>
-          </div>
-          {feedback && (
-              <div className={`mt-3 text-sm flex items-center gap-2 ${feedback.type === 'success' ? 'text-green-400' : 'text-red-400'}`}>
-                  {feedback.type === 'success' ? <CheckCircle className="size-4" /> : <AlertTriangle className="size-4" />}
-                  {feedback.message}
-              </div>
-          )}
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return null;
+        <div className="flex w-full max-w-sm items-center space-x-2">
+          <Input 
+              type="text" 
+              placeholder="Sua resposta"
+              value={answer}
+              onChange={(e) => setAnswer(e.target.value)}
+              disabled={!!feedback && feedback.type === 'success'}
+              onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    checkAnswer();
+                  }
+              }}
+          />
+          <Button 
+              onClick={checkAnswer}
+              disabled={!answer || (!!feedback && feedback.type === 'success')}
+          >
+              <Lightbulb className="size-4" />
+          </Button>
+        </div>
+        {feedback && (
+            <div className={`mt-3 text-sm flex items-center gap-2 ${feedback.type === 'success' ? 'text-green-400' : 'text-red-400'}`}>
+                {feedback.type === 'success' ? <CheckCircle className="size-4" /> : <AlertTriangle className="size-4" />}
+                {feedback.message}
+            </div>
+        )}
+      </CardContent>
+    </Card>
+  );
 }

@@ -80,8 +80,8 @@ export function ChatInterface({ temple }: ChatInterfaceProps) {
     const puzzleMatch = aiResponse.match(/\[PUZZLE:(.+)\]/);
     
     if (puzzleMatch && puzzleMatch[1]) {
-        const pokemonId = puzzleMatch[1].trim();
-        setCurrentPuzzle(pokemonId);
+        const puzzleId = puzzleMatch[1].trim();
+        setCurrentPuzzle(puzzleId);
         aiResponse = aiResponse.replace(/\[PUZZLE:(.+)\]/, `\n*Um desafio foi apresentado! Resolva-o para continuar.*`);
     }
 
@@ -150,7 +150,7 @@ export function ChatInterface({ temple }: ChatInterfaceProps) {
         
         {currentPuzzle && (
             <div className="w-full md:col-span-1 animate-fade-in-left border-l bg-background/50">
-                <PuzzleChallenge pokemonId={currentPuzzle} onSolved={handlePuzzleSolved} />
+                <PuzzleChallenge puzzleId={currentPuzzle} onSolved={handlePuzzleSolved} />
             </div>
         )}
       </div>
