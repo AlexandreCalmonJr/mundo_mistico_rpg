@@ -4,14 +4,15 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, Edit, Trash2 } from 'lucide-react';
-import { gameClasses as initialClasses, races as initialRaces, temples as initialTemples } from '@/lib/game-data';
-import type { GameClass, Race, Temple, Character } from '@/lib/game-data';
+import { gameClasses as initialClasses, races as initialRaces, temples as initialTemples, classGroups as initialClassGroups } from '@/lib/game-data';
+import type { GameClass, Race, Temple, Character, ClassGroup } from '@/lib/game-data';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DataTable } from '@/components/admin/data-table';
 import { ClassForm } from '@/components/admin/forms/class-form';
 import { RaceForm } from '@/components/admin/forms/race-form';
 import { TempleForm } from '@/components/admin/forms/temple-form';
+import { ClassGroupForm } from '@/components/admin/forms/class-group-form';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,12 +31,12 @@ const initialUsers: any[] = [
     { id: 'user-3', name: 'Jogador2', email: 'jogador2@email.com', role: 'Player' },
 ];
 
-type DataType = 'class' | 'race' | 'temple' | 'user';
+type DataType = 'class' | 'race' | 'temple' | 'user' | 'class-group';
 type DialogState = {
   isOpen: boolean;
   mode: 'add' | 'edit';
   type: DataType | null;
-  data: GameClass | Race | Temple | any | null;
+  data: GameClass | Race | Temple | ClassGroup | any | null;
 }
 
 export default function AdminPage() {
@@ -43,12 +44,13 @@ export default function AdminPage() {
   const [races, setRaces] = useState<Race[]>(initialRaces);
   const [temples, setTemples] = useState<Temple[]>(initialTemples);
   const [users, setUsers] = useState<any[]>(initialUsers);
+  const [classGroups, setClassGroups] = useState<ClassGroup[]>(initialClassGroups);
   
   const [dialogState, setDialogState] = useState<DialogState>({ isOpen: false, mode: 'add', type: null, data: null });
   const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean, type: DataType | null, id: string | null }>({ isOpen: false, type: null, id: null });
 
 
-  const handleOpenDialog = (mode: 'add' | 'edit', type: DataType, data: GameClass | Race | Temple | null = null) => {
+  const handleOpenDialog = (mode: 'add' | 'edit', type: DataType, data: GameClass | Race | Temple | ClassGroup | null = null) => {
     setDialogState({ isOpen: true, mode, type, data });
   };
   
@@ -75,6 +77,9 @@ export default function AdminPage() {
         break;
       case 'user':
         setUsers(prev => prev.filter(item => item.id !== deleteConfirm.id));
+        break;
+      case 'class-group':
+        setClassGroups(prev => prev.filter(item => item.id !== deleteConfirm.id));
         break;
     }
     setDeleteConfirm({ isOpen: false, type: null, id: null });
@@ -112,6 +117,13 @@ export default function AdminPage() {
           setUsers(prev => prev.map(item => item.id === id ? data : item));
         }
         break;
+      case 'class-group':
+        if (dialogState.mode === 'add') {
+          setClassGroups(prev => [...prev, { ...data, id: `group-${Date.now()}` }]);
+        } else {
+          setClassGroups(prev => prev.map(item => item.id === id ? data : item));
+        }
+        break;
     }
     handleCloseDialog();
   };
@@ -130,6 +142,7 @@ export default function AdminPage() {
       case 'class': return <ClassForm {...props} />;
       case 'race': return <RaceForm {...props} />;
       case 'temple': return <TempleForm {...props} />;
+      case 'class-group': return <ClassGroupForm {...props} gameClasses={gameClasses} />;
       // case 'user': return <UserForm {...props} />;
       default: return null;
     }
@@ -211,6 +224,25 @@ export default function AdminPage() {
     },
   ];
 
+  const classGroupColumns = [
+    { accessorKey: 'name', header: 'Nome do Grupo' },
+    { accessorKey: 'baseClassId', header: 'Classe Base', cell: ({row}: any) => gameClasses.find(c => c.id === row.original.baseClassId)?.name || 'N/A' },
+    { accessorKey: 'levelRequirement', header: 'Nível Mínimo' },
+    {
+      id: 'actions',
+      cell: ({ row }: { row: { original: any } }) => (
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => handleOpenDialog('edit', 'class-group', row.original)}>
+            <Edit className="h-4 w-4" />
+          </Button>
+          <Button variant="destructive" size="sm" onClick={() => handleDelete('class-group', row.original.id)}>
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      ),
+    },
+  ]
+
 
   return (
     <main className="p-4 sm:p-6 lg:p-8">
@@ -223,6 +255,7 @@ export default function AdminPage() {
             <TabsTrigger value="classes">Classes</TabsTrigger>
             <TabsTrigger value="races">Raças</TabsTrigger>
             <TabsTrigger value="temples">Templos</TabsTrigger>
+            <TabsTrigger value="class-groups">Grupos de Classes</TabsTrigger>
             <TabsTrigger value="users">Usuários</TabsTrigger>
           </TabsList>
 
@@ -251,6 +284,15 @@ export default function AdminPage() {
               </Button>
             </div>
             <DataTable columns={templeColumns} data={temples} />
+          </TabsContent>
+
+           <TabsContent value="class-groups">
+            <div className="flex justify-end mb-4">
+              <Button onClick={() => handleOpenDialog('add', 'class-group')}>
+                <PlusCircle className="mr-2 h-4 w-4" /> Adicionar Grupo
+              </Button>
+            </div>
+            <DataTable columns={classGroupColumns} data={classGroups} />
           </TabsContent>
 
           <TabsContent value="users">
@@ -284,5 +326,3 @@ export default function AdminPage() {
     </main>
   );
 }
-
-    

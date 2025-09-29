@@ -29,6 +29,13 @@ export type Character = {
   level: number;
 }
 
+export type ClassGroup = {
+  id: string;
+  name: string;
+  baseClassId: string;
+  levelRequirement: number;
+}
+
 export const gameClasses: GameClass[] = [
   {
     id: 'warrior',
@@ -108,4 +115,25 @@ export const temples: Temple[] = [
         type: 'Egyptian',
         description: 'Desvende hieróglifos, evite armadilhas mortais e responda ao enigma da Esfinge para saquear o tesouro do faraó.',
     },
+]
+
+export const classGroups: ClassGroup[] = [
+  {
+    id: 'group-1',
+    name: 'Gladiador',
+    baseClassId: 'warrior',
+    levelRequirement: 10,
+  },
+  {
+    id: 'group-2',
+    name: 'Senhor da Guerra',
+    baseClassId: 'warrior',
+    levelRequirement: 20,
+  },
+   {
+    id: 'group-3',
+    name: 'Arcanista',
+    baseClassId: 'mage',
+    levelRequirement: 10,
+  }
 ]
