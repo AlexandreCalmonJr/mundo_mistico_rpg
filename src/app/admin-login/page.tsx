@@ -21,8 +21,10 @@ export default function AdminLoginPage() {
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   useEffect(() => {
+    // This effect will react to changes in `isAdmin` state and redirect accordingly.
     if (!loading && isAdmin) {
       router.push('/dashboard');
     }
@@ -30,9 +32,10 @@ export default function AdminLoginPage() {
   
   const handleAdminLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoggingIn(true);
     try {
+      // adminLogin will set the isAdmin state, and the useEffect above will handle the redirect.
       await adminLogin(email, password);
-      router.push('/dashboard');
     } catch(err) {
       if (err instanceof Error) {
         toast({
@@ -41,6 +44,7 @@ export default function AdminLoginPage() {
             variant: 'destructive',
         });
       }
+      setIsLoggingIn(false); // Only set to false on error, on success we redirect
     }
   };
 
@@ -60,13 +64,15 @@ export default function AdminLoginPage() {
              <form onSubmit={handleAdminLogin} className="space-y-4">
                 <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" placeholder="admin@mundomitico.com" value={email} onChange={e => setEmail(e.target.value)} />
+                    <Input id="email" type="email" placeholder="admin@mundomitico.com" value={email} onChange={e => setEmail(e.target.value)} disabled={isLoggingIn} />
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="password">Senha</Label>
-                    <Input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)} />
+                    <Input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)} disabled={isLoggingIn} />
                 </div>
-                <Button type="submit" className="w-full">Entrar como Admin</Button>
+                <Button type="submit" className="w-full" disabled={isLoggingIn}>
+                    {isLoggingIn ? 'Entrando...' : 'Entrar como Admin'}
+                </Button>
              </form>
             <div className="mt-4 text-center text-sm">
               <Link href="/login" className="underline">

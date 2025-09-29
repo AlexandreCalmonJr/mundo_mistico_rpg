@@ -3,10 +3,10 @@
 'use client';
 
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
-import { getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup, User, signInWithEmailAndPassword } from 'firebase/auth';
+import { getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup, User } from 'firebase/auth';
 import { app } from '@/lib/firebase-config';
 import { useRouter, usePathname } from 'next/navigation';
-import { getDocument, setDocument, checkAdminStatus } from '@/services/firestore';
+import { getDocument, setDocument, checkAdminStatus, makeUserAdmin as makeUserAdminInDb } from '@/services/firestore';
 import type { Character } from '@/lib/game-data';
 
 const auth = getAuth(app);
@@ -20,6 +20,7 @@ interface AuthContextType {
   adminLogin: (email: string, pass: string) => Promise<void>;
   logout: () => Promise<void>;
   saveCharacter: (characterData: Character) => Promise<void>;
+  makeUserAdmin: (userId: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -37,35 +38,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setLoading(true);
-      
       if (user) {
         setUser(user);
-        
         const adminStatus = await checkAdminStatus(user.uid);
         setIsAdmin(adminStatus);
         
-        if (adminStatus) {
-            sessionStorage.setItem('isAdmin', 'true');
-        } else {
-            sessionStorage.removeItem('isAdmin');
-        }
-
         const char = await getDocument<Character>('characters', user.uid);
         setCharacter(char);
-
+        
+        // This is for regular user flow, not admin
         const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
         if (isProtectedRoute && !char && !pathname.startsWith('/dashboard/character/create') && !adminStatus) {
             router.push('/dashboard/character/create');
         }
 
       } else {
-        const localAdmin = sessionStorage.getItem('isAdmin') === 'true';
+        // If no firebase user, check if there's an admin session
+        const sessionAdmin = sessionStorage.getItem('isAdmin') === 'true';
+        setIsAdmin(sessionAdmin);
         setUser(null);
         setCharacter(null);
-        setIsAdmin(localAdmin);
 
         const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
-        if (isProtectedRoute && !localAdmin) {
+        if (isProtectedRoute && !sessionAdmin) {
           router.push('/login');
         }
       }
@@ -80,27 +75,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const provider = new GoogleAuthProvider();
     try {
       await signInWithPopup(auth, provider);
+      // onAuthStateChanged will handle the user state update
     } catch (error) {
       console.error("Error signing in with Google: ", error);
     }
   };
 
   const adminLogin = async (email: string, pass: string) => {
-    // This is a "fake" admin login for demonstration.
-    // In a real app, you would use Firebase Auth with custom claims or a separate admin user system.
+    // This remains a "fake" admin login, but now it correctly sets state
+    // which the login page can react to.
     if (email === 'admin@mundomitico.com' && pass === 'admin123') {
         sessionStorage.setItem('isAdmin', 'true');
         setIsAdmin(true);
+        // Setting user and char to null is important for a clean admin state
         setUser(null); 
         setCharacter(null);
+        return Promise.resolve(); // Indicate success
     } else {
-        throw new Error('Credenciais de administrador inválidas.');
+        return Promise.reject(new Error('Credenciais de administrador inválidas.'));
     }
   };
 
   const logout = async () => {
-    await signOut(auth);
-    sessionStorage.removeItem('isAdmin');
+    await signOut(auth); // This will sign out Google users
+    sessionStorage.removeItem('isAdmin'); // This logs out the fake admin
     setIsAdmin(false);
     setUser(null);
     setCharacter(null);
@@ -114,8 +112,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
   }
 
+  const makeUserAdmin = async (userId: string) => {
+    await makeUserAdminInDb(userId);
+    // If the admin is making themselves an admin, update the state
+    if (user && user.uid === userId) {
+        setIsAdmin(true);
+    }
+  }
+
+
   return (
-    <AuthContext.Provider value={{ user, character, loading, isAdmin, signInWithGoogle, adminLogin, logout, saveCharacter }}>
+    <AuthContext.Provider value={{ user, character, loading, isAdmin, signInWithGoogle, adminLogin, logout, saveCharacter, makeUserAdmin }}>
       {children}
     </AuthContext.Provider>
   );
