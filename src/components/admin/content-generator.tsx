@@ -80,9 +80,11 @@ export function ContentGenerator() {
       
       toast({
         title: 'Conteúdo importado com sucesso!',
-        description: `Novo(a) ${contentType} adicionado(a) ao banco de dados. Recarregue a página para ver a atualização na tabela.`,
+        description: `Novo(a) ${contentType} adicionado(a) ao banco de dados. A página será recarregada.`,
       });
       setGeneratedContent('');
+      // Reload the page to reflect the changes in the data table
+      window.location.reload();
 
     } catch (error) {
       console.error('Failed to import content:', error);
