@@ -38,26 +38,27 @@ export function MainSidebar() {
         <SidebarMenu>
           {menuItems.map((item) => (
             <SidebarMenuItem key={item.href}>
-              <Link href={item.href} legacyBehavior passHref>
-                <SidebarMenuButton
-                  isActive={pathname === item.href}
-                  tooltip={item.label}
-                >
+              <SidebarMenuButton
+                asChild
+                isActive={pathname === item.href}
+                tooltip={item.label}
+              >
+                <Link href={item.href}>
                   <item.icon />
                   <span>{item.label}</span>
-                </SidebarMenuButton>
-              </Link>
+                </Link>
+              </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
       </SidebarContent>
       <SidebarFooter>
-        <Link href="/" legacyBehavior passHref>
-            <Button variant="ghost" className="w-full justify-start gap-2">
+          <Button asChild variant="ghost" className="w-full justify-start gap-2">
+            <Link href="/">
                 <LogOut className="size-4" />
                 <span>Sair</span>
-            </Button>
-        </Link>
+            </Link>
+        </Button>
       </SidebarFooter>
     </Sidebar>
   );
