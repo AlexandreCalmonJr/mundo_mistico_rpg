@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { ShieldPlus } from 'lucide-react';
 import Link from 'next/link';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export type Temple = {
     name: string;
@@ -31,7 +32,7 @@ export default function AdventurePage() {
 
   if (hasCharacter === false) {
       return (
-          <main className="p-4 sm:p-6 lg:p-8 flex items-center justify-center min-h-full">
+          <main className="p-4 sm:p-6 lg:p-8 flex items-center justify-center min-h-[calc(100vh-4rem)]">
               <Card className="w-full max-w-md text-center">
                   <CardHeader>
                       <CardTitle className="text-2xl font-headline">Personagem Necessário</CardTitle>
@@ -51,7 +52,12 @@ export default function AdventurePage() {
   }
 
   if (hasCharacter === null) {
-    return null; // ou um loader
+    return (
+        <div className="p-4 sm:p-6 lg:p-8">
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-64 w-full mt-4" />
+        </div>
+    );
   }
   
   if (!selectedTemple) {

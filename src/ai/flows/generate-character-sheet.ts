@@ -14,6 +14,8 @@ const GenerateCharacterSheetInputSchema = z.object({
   characterName: z.string().describe('The name of the character.'),
   characterRace: z.string().describe('The race of the character (e.g., Human, Elf, Dwarf).'),
   characterClass: z.string().describe('The class of the character (e.g., Warrior, Mage, Archer).'),
+  classStrengths: z.array(z.string()).describe('List of strengths for the character\'s class.'),
+  classWeaknesses: z.array(z.string()).describe('List of weaknesses for the character\'s class.'),
 });
 export type GenerateCharacterSheetInput = z.infer<typeof GenerateCharacterSheetInputSchema>;
 
@@ -48,9 +50,13 @@ Crie uma ficha de personagem completa para:
 - Raça: {{{characterRace}}}
 - Classe: {{{characterClass}}}
 
+Considere os pontos fortes e fracos da classe ao gerar os atributos:
+- Pontos Fortes: {{#each classStrengths}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}
+- Pontos Fracos: {{#each classWeaknesses}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}
+
 Gere os seguintes detalhes:
 1.  **História (backstory):** Uma história de origem convincente com 2 ou 3 parágrafos. Deve ser sombria e misteriosa, mas com um pingo de esperança. Conecte a história à sua raça e classe.
-2.  **Atributos:** Gere quatro atributos principais: Força, Agilidade, Inteligência e Defesa. Os valores devem ser de 1 a 100 e devem refletir os pontos fortes e fracos típicos da classe do personagem. Por exemplo, um Guerreiro deve ter alta Força e Defesa.
+2.  **Atributos:** Gere quatro atributos principais: Força, Agilidade, Inteligência e Defesa. Os valores devem ser de 1 a 100 e devem refletir os pontos fortes e fracos da classe e raça do personagem. Por exemplo, um Guerreiro deve ter alta Força e Defesa, enquanto um Mago deve ter alta Inteligência.
 3.  **Habilidades Iniciais (initialAbilities):** Crie uma lista de 3 ou 4 nomes de habilidades iniciais que soem únicas e temáticas para a classe e raça.
 4.  **Equipamento Sugerido (suggestedEquipment):** Sugira 2 ou 3 peças de equipamento inicial, incluindo uma arma e uma peça de armadura. Dê um nome e uma breve descrição para cada item.
 

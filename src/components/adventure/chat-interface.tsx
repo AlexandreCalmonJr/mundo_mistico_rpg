@@ -95,20 +95,20 @@ export function ChatInterface({ temple }: ChatInterfaceProps) {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)] p-4 sm:p-6 lg:p-8">
-      <header className="mb-6">
-        <h1 className="text-3xl font-headline font-bold text-primary">{temple.name}</h1>
-        <p className="text-muted-foreground">Uma aventura narrada por IA. Suas ações moldam a história.</p>
+    <main className="h-[calc(100vh-4rem)] flex flex-col">
+      <header className="p-4 border-b">
+        <h1 className="text-2xl font-headline font-bold text-primary">{temple.name}</h1>
+        <p className="text-sm text-muted-foreground">Uma aventura narrada por IA. Suas ações moldam a história.</p>
       </header>
       
-      <div className="flex-grow flex flex-col md:flex-row gap-6 overflow-hidden">
-        <div className="flex-grow flex flex-col rounded-lg border bg-card text-card-foreground shadow-sm">
+      <div className="flex-grow grid grid-cols-1 md:grid-cols-3 gap-0 overflow-hidden">
+        <div className={`flex flex-col rounded-lg bg-card text-card-foreground ${currentPuzzle ? 'md:col-span-2' : 'md:col-span-3'}`}>
             <ScrollArea className="flex-grow p-4" ref={scrollAreaRef}>
-                <div className="space-y-6">
+                <div className="space-y-6 max-w-4xl mx-auto w-full">
                 {messages.map((message, index) => (
                     <div key={index} className={`flex items-start gap-3 ${message.role === 'user' ? 'justify-end' : ''}`}>
                     {message.role === 'assistant' && <Bot className="size-6 text-primary shrink-0 mt-1" />}
-                    <div className={`rounded-lg px-4 py-3 max-w-xl ${message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-secondary'}`}>
+                    <div className={`rounded-lg px-4 py-3 max-w-xl shadow-md ${message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-secondary'}`}>
                         <p className="text-sm whitespace-pre-wrap">{message.content}</p>
                     </div>
                     {message.role === 'user' && <User className="size-6 shrink-0 mt-1" />}
@@ -124,34 +124,37 @@ export function ChatInterface({ temple }: ChatInterfaceProps) {
                 )}
                 </div>
             </ScrollArea>
-            <div className="p-4 border-t flex items-start gap-4">
-                <Textarea
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="O que você faz?"
-                className="flex-grow resize-none"
-                onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSendMessage();
-                    }
-                }}
-                disabled={isLoading || !!currentPuzzle}
-                />
-                <Button onClick={handleSendMessage} disabled={isLoading || !input.trim() || !!currentPuzzle}>
-                    <Send className="size-4" />
-                    <span className="sr-only">Enviar</span>
-                </Button>
+            <div className="p-4 border-t bg-background">
+                <div className="max-w-4xl mx-auto flex items-start gap-4">
+                    <Textarea
+                        value={input}
+                        onChange={(e) => setInput(e.target.value)}
+                        placeholder="O que você faz?"
+                        className="flex-grow resize-none"
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            handleSendMessage();
+                            }
+                        }}
+                        disabled={isLoading || !!currentPuzzle}
+                        rows={1}
+                    />
+                    <Button onClick={handleSendMessage} disabled={isLoading || !input.trim() || !!currentPuzzle}>
+                        <Send className="size-4" />
+                        <span className="sr-only">Enviar</span>
+                    </Button>
+                </div>
             </div>
         </div>
         
         {currentPuzzle && (
-            <div className="w-full md:w-1/3 lg:w-1/4 animate-fade-in-left">
+            <div className="w-full md:col-span-1 animate-fade-in-left border-l bg-background/50">
                 <PuzzleChallenge pokemonId={currentPuzzle} onSolved={handlePuzzleSolved} />
             </div>
         )}
       </div>
 
-    </div>
+    </main>
   );
 }

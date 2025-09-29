@@ -70,6 +70,8 @@ export default function CharacterSheetPage() {
                 characterName: parsedChar.name,
                 characterRace: raceInfo.name,
                 characterClass: classInfo.name,
+                classStrengths: classInfo.strengths,
+                classWeaknesses: classInfo.weaknesses,
             });
             setSheet(result);
         }

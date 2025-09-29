@@ -17,6 +17,7 @@ import { Button } from '../ui/button';
 import { LayoutDashboard, User, Map, MessageSquare, Users, Crown, LogOut, Sparkles, Shield, Swords, Users2, FileText, PanelLeft } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Logo } from '../icons/logo';
+import { useEffect, useState } from 'react';
 
 
 const menuItems = [
@@ -49,6 +50,12 @@ function SidebarLogo() {
 
 export function MainSidebar() {
   const pathname = usePathname();
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const adminStatus = localStorage.getItem('isAdmin') === 'true';
+    setIsAdmin(adminStatus);
+  }, []);
 
   return (
     <Sidebar variant="inset" collapsible="icon">
@@ -72,25 +79,27 @@ export function MainSidebar() {
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
-         <SidebarMenu className="mt-auto">
-            <div className="mb-2 ml-2 mt-2">
-                <p className="text-xs font-semibold text-muted-foreground tracking-wider">ADMINISTRAÇÃO</p>
-            </div>
-             {adminMenuItems.map((item) => (
-                <SidebarMenuItem key={item.href}>
-                <SidebarMenuButton
-                    asChild
-                    isActive={pathname === item.href}
-                    tooltip={item.label}
-                >
-                    <Link href={item.href}>
-                    <item.icon />
-                    <span>{item.label}</span>
-                    </Link>
-                </SidebarMenuButton>
-                </SidebarMenuItem>
-            ))}
-        </SidebarMenu>
+        {isAdmin && (
+            <SidebarMenu className="mt-auto">
+                <div className="mb-2 ml-2 mt-2">
+                    <p className="text-xs font-semibold text-muted-foreground tracking-wider">ADMINISTRAÇÃO</p>
+                </div>
+                {adminMenuItems.map((item) => (
+                    <SidebarMenuItem key={item.href}>
+                    <SidebarMenuButton
+                        asChild
+                        isActive={pathname === item.href}
+                        tooltip={item.label}
+                    >
+                        <Link href={item.href}>
+                        <item.icon />
+                        <span>{item.label}</span>
+                        </Link>
+                    </SidebarMenuButton>
+                    </SidebarMenuItem>
+                ))}
+            </SidebarMenu>
+        )}
       </SidebarContent>
       <SidebarFooter>
          <div className="flex items-center gap-3">
