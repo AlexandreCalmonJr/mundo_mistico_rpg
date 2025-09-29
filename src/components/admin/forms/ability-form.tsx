@@ -36,7 +36,7 @@ const formSchema = z.object({
   type: z.enum(['Ataque', 'Defesa', 'Suporte', 'Utilidade']),
   cost: z.coerce.number().min(0, 'O custo deve ser 0 ou mais.'),
   levelRequirement: z.coerce.number().min(1, 'O nível deve ser pelo menos 1.'),
-  classId: z.string().optional(),
+  classId: z.string().optional().default('any'),
 });
 
 interface AbilityFormProps {
@@ -64,12 +64,17 @@ export function AbilityForm({ isOpen, onClose, onSave, defaultValues, gameClasse
       type: defaultValues?.type || 'Ataque',
       cost: defaultValues?.cost || 0,
       levelRequirement: defaultValues?.levelRequirement || 1,
-      classId: defaultValues?.classId || '',
+      classId: defaultValues?.classId || 'any',
     },
   });
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    onSave(values);
+    // If classId is 'any', save it as an empty string or undefined in the database
+    const dataToSave = {
+      ...values,
+      classId: values.classId === 'any' ? undefined : values.classId,
+    };
+    onSave(dataToSave);
   };
   
   const handleGenerateWithAI = async () => {
@@ -191,12 +196,12 @@ export function AbilityForm({ isOpen, onClose, onSave, defaultValues, gameClasse
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Classe (Opcional)</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value || ''}>
+                  <Select onValueChange={field.onChange} value={field.value || 'any'}>
                     <FormControl>
                       <SelectTrigger><SelectValue placeholder="Selecione a classe" /></SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="">Qualquer Classe</SelectItem>
+                      <SelectItem value="any">Qualquer Classe</SelectItem>
                       {gameClasses.map((gClass) => (
                         <SelectItem key={gClass.id} value={gClass.id}>{gClass.name}</SelectItem>
                       ))}
