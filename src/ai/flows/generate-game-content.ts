@@ -31,7 +31,7 @@ export async function generateGameContent(
   return generateGameContentFlow(input);
 }
 
-const prompt = ai.definePrompt({
+const mainPrompt = ai.definePrompt({
   name: 'generateGameContentPrompt',
   input: { schema: GenerateGameContentInputSchema },
   output: { schema: GenerateGameContentOutputSchema },
@@ -140,6 +140,17 @@ Agora, gere o JSON para o prompt do usuário.
 `,
 });
 
+const fixJsonPrompt = ai.definePrompt({
+    name: 'fixJsonPrompt',
+    input: { schema: z.object({ badJson: z.string() }) },
+    output: { schema: GenerateGameContentOutputSchema },
+    prompt: `O seguinte texto JSON está malformado. Corrija-o e retorne apenas a string JSON válida no campo 'generatedJson'. Não inclua nenhum outro texto ou explicação.
+
+JSON Inválido:
+{{{badJson}}}
+`,
+});
+
 const generateGameContentFlow = ai.defineFlow(
   {
     name: 'generateGameContentFlow',
@@ -147,20 +158,35 @@ const generateGameContentFlow = ai.defineFlow(
     outputSchema: GenerateGameContentOutputSchema,
   },
   async (input) => {
-    const { output } = await prompt(input);
-    if (!output) {
-      throw new Error("A IA não conseguiu gerar o conteúdo.");
+    const { output: initialOutput } = await mainPrompt(input);
+    if (!initialOutput) {
+      throw new Error("A IA não conseguiu gerar o conteúdo inicial.");
     }
-    // Attempt to parse the JSON to ensure it's valid before returning.
-    // This can help catch malformed JSON from the LLM.
+    
+    let jsonString = initialOutput.generatedJson.replace(/^```json\n|```$/g, '').trim();
+
     try {
-      // Clean the response in case the AI wraps it in markdown
-      const cleanedJson = output.generatedJson.replace(/^```json\n|```$/g, '');
-      JSON.parse(cleanedJson);
-      return { generatedJson: cleanedJson };
+      JSON.parse(jsonString);
+      return { generatedJson: jsonString };
     } catch (e) {
-      console.error("A IA retornou um JSON inválido:", output.generatedJson);
-      throw new Error("A resposta da IA não era um JSON válido.");
+      console.warn("IA retornou JSON inválido na primeira tentativa. Tentando corrigir...");
+      console.warn("JSON Inválido:", jsonString);
+
+      const { output: fixedOutput } = await fixJsonPrompt({ badJson: jsonString });
+       if (!fixedOutput) {
+         throw new Error("A IA não conseguiu corrigir o JSON.");
+       }
+       
+       const fixedJsonString = fixedOutput.generatedJson.replace(/^```json\n|```$/g, '').trim();
+       
+       try {
+           JSON.parse(fixedJsonString);
+           console.log("JSON corrigido com sucesso!");
+           return { generatedJson: fixedJsonString };
+       } catch (finalError) {
+            console.error("A IA falhou em corrigir o JSON:", fixedJsonString);
+            throw new Error("A resposta da IA não era um JSON válido, mesmo após a tentativa de correção.");
+       }
     }
   }
 );
