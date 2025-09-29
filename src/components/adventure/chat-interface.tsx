@@ -6,6 +6,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Send, Bot, User, Loader2 } from 'lucide-react';
 import { PuzzleChallenge } from './puzzle-challenge';
+import type { Character } from '@/lib/game-data';
+import { gameClasses, races } from '@/lib/game-data';
 
 interface ChatInterfaceProps {
   temple: Temple;
@@ -21,16 +23,27 @@ export function ChatInterface({ temple }: ChatInterfaceProps) {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [currentPuzzle, setCurrentPuzzle] = useState<string | null>(null);
+  const [characterDetails, setCharacterDetails] = useState('');
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+   useEffect(() => {
+    const charData = localStorage.getItem('character');
+    let details = 'Aventureiro desconhecido';
+    if (charData) {
+      const parsedChar: Character = JSON.parse(charData);
+      const race = races.find(r => r.id === parsedChar.race)?.name || 'Raça desconhecida';
+      const gameClass = gameClasses.find(c => c.id === parsedChar.gameClass)?.name || 'Classe desconhecida';
+      details = `${parsedChar.name}, o ${race} ${gameClass}, Nível ${parsedChar.level}`;
+    }
+    setCharacterDetails(details);
+
     const startAdventure = async () => {
       setIsLoading(true);
       const initialMessage = 'Começar a aventura.';
       const response = await aiChatGameMaster({
         templeType: temple.type,
-        playerCharacterDetails: 'Humano Guerreiro, Nível 1',
+        playerCharacterDetails: details,
         playerMessage: initialMessage,
       });
       setMessages([{ role: 'assistant', content: response.gameMasterResponse }]);
@@ -59,7 +72,7 @@ export function ChatInterface({ temple }: ChatInterfaceProps) {
 
     const response = await aiChatGameMaster({
       templeType: temple.type,
-      playerCharacterDetails: 'Humano Guerreiro, Nível 1',
+      playerCharacterDetails: characterDetails,
       playerMessage: input,
     });
     

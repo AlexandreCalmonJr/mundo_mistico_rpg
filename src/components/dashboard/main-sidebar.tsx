@@ -14,10 +14,11 @@ import {
 } from '@/components/ui/sidebar';
 import { Logo } from '@/components/icons/logo';
 import { Button } from '../ui/button';
-import { LayoutDashboard, Swords, UserPlus, BrainCircuit, LogOut } from 'lucide-react';
+import { LayoutDashboard, Swords, UserPlus, BrainCircuit, LogOut, BookUser } from 'lucide-react';
 
 const menuItems = [
   { href: '/dashboard', label: 'Painel', icon: LayoutDashboard },
+  { href: '/dashboard/character/sheet', label: 'Meu Personagem', icon: BookUser },
   { href: '/dashboard/character/create', label: 'Criar Personagem', icon: UserPlus },
   { href: '/dashboard/classes', label: 'Classes e Raças', icon: Swords },
   { href: '/dashboard/adventure', label: 'Aventura', icon: BrainCircuit },
@@ -40,7 +41,7 @@ export function MainSidebar() {
             <SidebarMenuItem key={item.href}>
               <SidebarMenuButton
                 asChild
-                isActive={pathname === item.href}
+                isActive={pathname.startsWith(item.href) && (item.href !== '/dashboard' || pathname === '/dashboard')}
                 tooltip={item.label}
               >
                 <Link href={item.href}>

@@ -16,7 +16,7 @@ const AIChatGameMasterInputSchema = z.object({
     .describe("The type of temple the player is exploring (e.g., Aztec, Inca, Norse)."),
   playerCharacterDetails: z
     .string()
-    .describe("Details about the player's character, including race, class, and level."),
+    .describe("A summary of the player's character, including name, race, class, and level."),
   playerMessage: z
     .string()
     .describe('The player’s message or action within the adventure.'),
@@ -50,7 +50,7 @@ Use the following player character details to tailor the adventure: {{{playerCha
 
 Player message: {{{playerMessage}}}
 
-Respond with a narrative that continues the adventure, presents challenges, and incorporates the player's actions.
+Respond with a narrative that continues the adventure, presents challenges, and incorporates the player's actions. Keep the tone dark, mysterious, and epic.
 `,
 });
 

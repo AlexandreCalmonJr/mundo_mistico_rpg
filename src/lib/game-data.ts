@@ -21,6 +21,14 @@ export type Temple = {
     description: string;
 }
 
+export type Character = {
+  id: string;
+  name: string;
+  race: string;
+  gameClass: string;
+  level: number;
+}
+
 export const gameClasses: GameClass[] = [
   {
     id: 'warrior',

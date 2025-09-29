@@ -3,15 +3,21 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, ShieldPlus, Cog } from 'lucide-react';
+import { Users, ShieldPlus, Cog, BookUser } from 'lucide-react';
 import Link from 'next/link';
+import type { Character } from '@/lib/game-data';
 
 export default function DashboardPage() {
   const [isAdmin, setIsAdmin] = useState(false);
+  const [character, setCharacter] = useState<Character | null>(null);
 
   useEffect(() => {
-    if (localStorage.getItem('isAdmin') === 'true') {
-      setIsAdmin(true);
+    const adminStatus = localStorage.getItem('isAdmin') === 'true';
+    setIsAdmin(adminStatus);
+
+    const charData = localStorage.getItem('character');
+    if (charData) {
+      setCharacter(JSON.parse(charData));
     }
   }, []);
 
@@ -28,18 +34,33 @@ export default function DashboardPage() {
                 <div className="bg-primary/10 p-3 rounded-md">
                   <Users className="size-6 text-primary" />
                 </div>
-                <CardTitle className="font-headline text-2xl">Meus Personagens</CardTitle>
+                <CardTitle className="font-headline text-2xl">Meu Personagem</CardTitle>
               </div>
-              <CardDescription>Gerencie seus heróis e prepare-os para a batalha.</CardDescription>
+              <CardDescription>Gerencie seu herói e prepare-o para a batalha.</CardDescription>
             </CardHeader>
             <CardContent className="flex-grow flex flex-col items-center justify-center text-center">
-                <p className="text-muted-foreground mb-4">Você ainda não criou um personagem.</p>
-                <Button asChild>
-                    <Link href="/dashboard/character/create">
-                        <ShieldPlus className="mr-2 h-4 w-4" />
-                        Criar Novo Personagem
-                    </Link>
-                </Button>
+                {character ? (
+                  <div className="flex flex-col items-center gap-4">
+                    <p className="font-semibold text-lg">{character.name}</p>
+                    <p className="text-muted-foreground">Nível {character.level}</p>
+                    <Button asChild>
+                      <Link href="/dashboard/character/sheet">
+                        <BookUser className="mr-2 h-4 w-4" />
+                        Ver Ficha
+                      </Link>
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-muted-foreground mb-4">Você ainda não criou um personagem.</p>
+                    <Button asChild>
+                        <Link href="/dashboard/character/create">
+                            <ShieldPlus className="mr-2 h-4 w-4" />
+                            Criar Novo Personagem
+                        </Link>
+                    </Button>
+                  </>
+                )}
             </CardContent>
           </Card>
 
@@ -50,7 +71,7 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent className="flex-grow flex flex-col items-center justify-center text-center">
                 <p className="text-muted-foreground mb-4">Escolha um templo e comece sua exploração.</p>
-                <Button asChild variant="default">
+                <Button asChild variant="default" disabled={!character}>
                     <Link href="/dashboard/adventure">
                         Explorar Templos
                     </Link>
