@@ -62,7 +62,7 @@ export default function CharacterCreationPage() {
   const availableClasses = gameClasses.filter(gc => gc.mythology === selectedMythology);
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    const character: Omit<Character, 'level' | 'attributes' | 'xp' | 'xpToNextLevel' | 'attributePoints'> & { level?: number } = {
+    const character: Omit<Character, 'level' | 'attributes' | 'xp' | 'xpToNextLevel' | 'attributePoints' | 'maxHp' | 'currentHp'> = {
         id: `char-${Date.now()}`,
         ...values,
     }
@@ -203,5 +203,3 @@ export default function CharacterCreationPage() {
     </main>
   );
 }
-
-    
