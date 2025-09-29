@@ -1,22 +1,14 @@
+
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // Regra padrão: Permite leitura e escrita para qualquer usuário autenticado.
-    // **AVISO**: Para produção, você DEVE restringir o acesso.
-    // Por exemplo, permita que apenas administradores escrevam em coleções de dados do jogo.
+    // This rule allows anyone to read and write to the database.
+    // WARNING: This is insecure. You should secure your database before going to production.
+    // For example, you could restrict write access to authenticated users:
+    // allow write: if request.auth != null;
     match /{document=**} {
-      allow read, write: if request.auth != null;
+      allow read, write: if true;
     }
-
-    // Exemplo de regra mais restritiva para a coleção 'classes':
-    // Permite que qualquer um leia, mas apenas administradores (com uma custom claim) escrevam.
-    // match /classes/{classId} {
-    //   allow read: if request.auth != null;
-    //   allow write: if request.auth.token.isAdmin == true;
-    // }
   }
 }
-
-    
