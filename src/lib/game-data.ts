@@ -19,6 +19,16 @@ export type Ability = {
   classId: string; // ID da classe que pode usar a habilidade
 }
 
+export type Weapon = {
+  id: string;
+  name: string;
+  description: string;
+  type: 'Espada' | 'Machado' | 'Arco' | 'Cajado' | 'Adaga' | 'Lança';
+  damage: number;
+  rarity: 'Comum' | 'Incomum' | 'Raro' | 'Épico' | 'Lendário';
+  classRequirement: string[]; // Array de IDs de classes
+}
+
 export type GameClass = {
   id: string;
   name: string;
@@ -473,4 +483,34 @@ export const abilities: Ability[] = [
     levelRequirement: 3,
     classId: 'priest-of-ra'
   }
-]
+];
+
+export const weapons: Weapon[] = [
+  {
+    id: 'weapon-1',
+    name: 'Espada Curta de Ferro',
+    description: 'Uma espada básica, confiável para qualquer aventureiro iniciante.',
+    type: 'Espada',
+    damage: 10,
+    rarity: 'Comum',
+    classRequirement: ['hoplite', 'samurai', 'medjay']
+  },
+  {
+    id: 'weapon-2',
+    name: 'Arco Longo de Teixo',
+    description: 'Um arco preciso que exige força para ser manejado corretamente.',
+    type: 'Arco',
+    damage: 12,
+    rarity: 'Comum',
+    classRequirement: ['medjay']
+  },
+  {
+    id: 'weapon-3',
+    name: 'Cajado do Aprendiz',
+    description: 'Um cajado simples imbuído com uma pequena centelha de magia.',
+    type: 'Cajado',
+    damage: 8,
+    rarity: 'Comum',
+    classRequirement: ['seidr', 'oracle', 'priest-of-ra', 'onmyoji', 'sun-priest']
+  }
+];
