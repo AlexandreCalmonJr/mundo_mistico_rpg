@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -9,6 +10,7 @@ import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Swords, Shield, Heart, Bot, User, Loader2, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 interface CombatInterfaceProps {
   enemy: Enemy;
@@ -23,6 +25,7 @@ type CombatLog = {
 export function CombatInterface({ enemy, onCombatEnd }: CombatInterfaceProps) {
   const { toast } = useToast();
   const [player, setPlayer] = useState<Character | null>(null);
+  const [initialAbilities, setInitialAbilities] = useState<string[]>([]);
   const [currentEnemy, setCurrentEnemy] = useState<Enemy>(enemy);
   const [combatLog, setCombatLog] = useState<CombatLog[]>([]);
   const [turn, setTurn] = useState(1);
@@ -32,7 +35,13 @@ export function CombatInterface({ enemy, onCombatEnd }: CombatInterfaceProps) {
   useEffect(() => {
     const charData = localStorage.getItem('character');
     if (charData) {
-      setPlayer(JSON.parse(charData));
+      const parsedChar = JSON.parse(charData);
+      setPlayer(parsedChar);
+      
+      const abilitiesData = localStorage.getItem(`char_abilities_${parsedChar.id}`);
+      if (abilitiesData) {
+        setInitialAbilities(JSON.parse(abilitiesData));
+      }
     }
   }, []);
 
@@ -148,9 +157,30 @@ export function CombatInterface({ enemy, onCombatEnd }: CombatInterfaceProps) {
             <Button onClick={() => processTurn('Ataque básico com a arma.')} disabled={isLoading || player.currentHp <= 0}>
                 <Swords className="mr-2" /> Atacar
             </Button>
-            <Button disabled>
-                 <Sparkles className="mr-2" /> Habilidades
-            </Button>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button disabled={isLoading || player.currentHp <= 0 || initialAbilities.length === 0}>
+                    <Sparkles className="mr-2" /> Habilidades
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80">
+                <div className="grid gap-4">
+                  <div className="space-y-2">
+                    <h4 className="font-medium leading-none">Habilidades</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Selecione uma habilidade para usar neste turno.
+                    </p>
+                  </div>
+                  <div className="grid gap-2">
+                    {initialAbilities.map(abilityName => (
+                         <Button key={abilityName} variant="outline" onClick={() => processTurn(`Usa a habilidade: ${abilityName}`)}>
+                            {abilityName}
+                        </Button>
+                    ))}
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
             <Button variant="outline" disabled>
                  <Shield className="mr-2" /> Defender
             </Button>
