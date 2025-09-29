@@ -11,28 +11,23 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Logo } from '@/components/icons/logo';
 import { useToast } from '@/hooks/use-toast';
-import { Separator } from '@/components/ui/separator';
 
 export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const { signInWithGoogle } = useAuth();
+  const { signInWithGoogle, setAdmin } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
   const handleAdminLogin = (e: React.FormEvent) => {
     e.preventDefault();
     if (email === 'admin@mundomitico.com' && password === 'admin123') {
-      localStorage.setItem('isAdmin', 'true');
-       // For admin, we might need a fake user session or a specific flow
-       // For now, let's just push to dashboard and let the auth guard handle it if it fails
-       // A proper solution would use Firebase custom claims for the admin role.
-      signInWithGoogle(); // Let's use this to create a session.
+       setAdmin(true);
     } else {
-      localStorage.removeItem('isAdmin');
+      setAdmin(false);
       toast({
         title: 'Credenciais de admin inválidas',
-        description: 'Apenas administradores podem usar este formulário.',
+        description: 'Verifique seu email e senha de administrador.',
         variant: 'destructive',
       });
     }
@@ -61,13 +56,12 @@ export default function LoginPage() {
                     </div>
                     <div className="relative flex justify-center text-xs uppercase">
                         <span className="bg-background px-2 text-muted-foreground">
-                        Ou continue com
+                        Ou entre como Admin
                         </span>
                     </div>
                 </div>
 
                 <form onSubmit={handleAdminLogin} className="grid gap-4">
-                    <p className="text-center text-sm text-muted-foreground">Login de Administrador</p>
                     <div className="grid gap-2">
                         <Label htmlFor="email">Email de Admin</Label>
                         <Input id="email" type="email" placeholder="admin@mundomitico.com" required value={email} onChange={(e) => setEmail(e.target.value)} />

@@ -52,7 +52,7 @@ function SidebarLogo() {
 
 export function MainSidebar() {
   const pathname = usePathname();
-  const { user, character, isAdmin, logout } = useAuth();
+  const { user, character, isAdmin, isFakeAdmin, logout } = useAuth();
 
 
   return (
@@ -62,20 +62,26 @@ export function MainSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarMenu>
-          {menuItems.map((item) => (
-            <SidebarMenuItem key={item.href}>
-              <SidebarMenuButton
-                asChild
-                isActive={pathname === item.href}
-                tooltip={item.label}
-              >
-                <Link href={item.href}>
-                  <item.icon />
-                  <span>{item.label}</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
+          {menuItems.map((item) => {
+            // Hide character-specific links for admin
+            if (isFakeAdmin && (item.href.includes('/character/') || item.href === '/dashboard')) {
+                return null;
+            }
+            return (
+                <SidebarMenuItem key={item.href}>
+                <SidebarMenuButton
+                    asChild
+                    isActive={pathname === item.href}
+                    tooltip={item.label}
+                >
+                    <Link href={item.href}>
+                    <item.icon />
+                    <span>{item.label}</span>
+                    </Link>
+                </SidebarMenuButton>
+                </SidebarMenuItem>
+            )
+           })}
         </SidebarMenu>
         {isAdmin && (
             <SidebarMenu className="mt-auto">
@@ -103,11 +109,11 @@ export function MainSidebar() {
          <div className="flex items-center gap-3">
             <Avatar>
                 <AvatarImage src={user?.photoURL || "https://picsum.photos/seed/adventurer/40/40"} />
-                <AvatarFallback>{user?.displayName?.charAt(0) || 'A'}</AvatarFallback>
+                <AvatarFallback>{isAdmin ? 'A' : user?.displayName?.charAt(0) || 'A'}</AvatarFallback>
             </Avatar>
             <div className="flex flex-col">
-                <span className="text-sm font-semibold">{character?.name || user?.displayName || 'Aventureiro'}</span>
-                <span className="text-xs text-muted-foreground">Nível {character?.level || 0}</span>
+                <span className="text-sm font-semibold">{ isFakeAdmin ? 'Admin' : character?.name || user?.displayName || 'Aventureiro'}</span>
+                <span className="text-xs text-muted-foreground">{ isFakeAdmin ? 'Administrador' : `Nível ${character?.level || 0}` }</span>
             </div>
          </div>
          <Button asChild variant="ghost" className="w-full justify-start gap-2" onClick={logout}>

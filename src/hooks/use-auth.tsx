@@ -15,6 +15,8 @@ interface AuthContextType {
   character: Character | null;
   loading: boolean;
   isAdmin: boolean;
+  isFakeAdmin: boolean;
+  setAdmin: (adminStatus: boolean) => void;
   signInWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
   saveCharacter: (characterData: Character) => Promise<void>;
@@ -29,23 +31,45 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [character, setCharacter] = useState<Character | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isFakeAdmin, setIsFakeAdmin] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
+    // This effect handles the "fake" admin state for local development
+    const adminStatus = localStorage.getItem('isAdmin') === 'true';
+    if(adminStatus) {
+        setIsAdmin(true);
+        setIsFakeAdmin(true);
+        setLoading(false);
+        if(!pathname.startsWith('/dashboard')) {
+            router.push('/dashboard');
+        }
+    }
+  }, [pathname, router]);
+
+  useEffect(() => {
+    const adminInStorage = localStorage.getItem('isAdmin') === 'true';
+    if(adminInStorage) {
+      // If we are a fake admin, don't run the regular auth flow
+      return;
+    }
+
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setLoading(true);
       if (user) {
         setUser(user);
+        
+        // In a real app, admin status should come from custom claims, not localStorage.
+        // This is a simplified approach.
         const adminStatus = localStorage.getItem('isAdmin') === 'true';
         setIsAdmin(adminStatus);
 
-        // Fetch character from Firestore
         const char = await getDocument<Character>('characters', user.uid);
         setCharacter(char);
 
         const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
-        if (!char && pathname !== '/dashboard/character/create') {
+        if (isProtectedRoute && !char && pathname !== '/dashboard/character/create' && !pathname.startsWith('/dashboard/admin')) {
             router.push('/dashboard/character/create');
         } else if (isProtectedRoute && char) {
             // User is logged in, has a character and is on a protected route. Stay.
@@ -68,8 +92,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     return () => unsubscribe();
   }, [router, pathname]);
+  
+  const setAdmin = (adminStatus: boolean) => {
+      if(adminStatus) {
+          localStorage.setItem('isAdmin', 'true');
+          setIsAdmin(true);
+          setIsFakeAdmin(true);
+          router.push('/dashboard/admin');
+      } else {
+          localStorage.removeItem('isAdmin');
+          setIsAdmin(false);
+          setIsFakeAdmin(false);
+      }
+  }
+
 
   const signInWithGoogle = async () => {
+    localStorage.removeItem('isAdmin');
+    setIsAdmin(false);
+    setIsFakeAdmin(false);
     const provider = new GoogleAuthProvider();
     try {
       await signInWithPopup(auth, provider);
@@ -80,8 +121,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = async () => {
-    await signOut(auth);
-    router.push('/login');
+    if (isFakeAdmin) {
+        setAdmin(false);
+        router.push('/login');
+    } else {
+        await signOut(auth);
+    }
+    // onAuthStateChanged will handle the redirect for firebase users
   };
   
   const saveCharacter = async (characterData: Character) => {
@@ -92,7 +138,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }
 
   return (
-    <AuthContext.Provider value={{ user, character, loading, isAdmin, signInWithGoogle, logout, saveCharacter }}>
+    <AuthContext.Provider value={{ user, character, loading, isAdmin, isFakeAdmin, setAdmin, signInWithGoogle, logout, saveCharacter }}>
       {children}
     </AuthContext.Provider>
   );
