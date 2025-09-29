@@ -1,3 +1,52 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "hero-background",
+      "description": "A sprawling ancient temple ruin at sunset.",
+      "imageUrl": "https://images.unsplash.com/photo-1707789139538-d626177053ae?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxhbmNpZW50JTIwdGVtcGxlJTIwcnVpbnN8ZW58MHx8fHwxNzU5MTU4NTA0fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "ancient temple ruins"
+    },
+    {
+      "id": "warrior-class",
+      "description": "A heavily armored fantasy warrior.",
+      "imageUrl": "https://images.unsplash.com/photo-1745383586468-13f3a24ffe8b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxmYW50YXN5JTIwd2FycmlvcnxlbnwwfHx8fDE3NTkxMjg1NDF8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "fantasy warrior"
+    },
+    {
+      "id": "mage-class",
+      "description": "A wise fantasy mage casting a spell.",
+      "imageUrl": "https://images.unsplash.com/photo-1687567571600-4b5ad80665b8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8ZmFudGFzeSUyMG1hZ2V8ZW58MHx8fHwxNzU5MDk3MDE1fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "fantasy mage"
+    },
+    {
+      "id": "archer-class",
+      "description": "A nimble fantasy archer with a bow.",
+      "imageUrl": "https://images.unsplash.com/photo-1636075204447-ed932101c622?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxmYW50YXN5JTIwYXJjaGVyfGVufDB8fHx8MTc1OTA5NzAxNXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "fantasy archer"
+    },
+    {
+      "id": "character-creation",
+      "description": "A newly created fantasy character.",
+      "imageUrl": "https://images.unsplash.com/photo-1758850253805-8572b62e376d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxmYW50YXN5JTIwY2hhcmFjdGVyfGVufDB8fHx8MTc1OTA3MzgxMHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "fantasy character"
+    },
+    {
+      "id": "human-race",
+      "description": "A versatile human character.",
+      "imageUrl": "https://images.unsplash.com/photo-1710163521086-4258cd5de338?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxmYW50YXN5JTIwaHVtYW58ZW58MHx8fHwxNzU5MTU4NTA0fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "fantasy human"
+    },
+    {
+      "id": "elf-race",
+      "description": "An elegant elf character.",
+      "imageUrl": "https://images.unsplash.com/photo-1707725566598-8a19b7bb43b3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxmYW50YXN5JTIwZWxmfGVufDB8fHx8MTc1OTEzNzk5OHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "fantasy elf"
+    },
+    {
+      "id": "dwarf-race",
+      "description": "A sturdy dwarf character.",
+      "imageUrl": "https://images.unsplash.com/photo-1629617974708-f8b7e1ca30e9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxmYW50YXN5JTIwZHdhcmZ8ZW58MHx8fHwxNzU5MTU4NTA0fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "fantasy dwarf"
+    }
+  ]
 }
