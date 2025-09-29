@@ -23,8 +23,8 @@ export default function AdminLoginPage() {
   const [password, setPassword] = useState('');
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
+  // Redirect if already admin and not loading
   useEffect(() => {
-    // This effect will react to changes in `isAdmin` state and redirect accordingly.
     if (!loading && isAdmin) {
       router.push('/dashboard');
     }
@@ -34,8 +34,10 @@ export default function AdminLoginPage() {
     e.preventDefault();
     setIsLoggingIn(true);
     try {
-      // adminLogin will set the isAdmin state, and the useEffect above will handle the redirect.
       await adminLogin(email, password);
+      // On success, redirect to dashboard.
+      // The useAuth hook will persist the admin state.
+      router.push('/dashboard');
     } catch(err) {
       if (err instanceof Error) {
         toast({
@@ -44,7 +46,7 @@ export default function AdminLoginPage() {
             variant: 'destructive',
         });
       }
-      setIsLoggingIn(false); // Only set to false on error, on success we redirect
+      setIsLoggingIn(false);
     }
   };
 

@@ -53,9 +53,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
 
       } else {
-        // If no firebase user, check if there's an admin session
+        // If no firebase user, check if there's an admin session and preserve it.
         const sessionAdmin = sessionStorage.getItem('isAdmin') === 'true';
-        setIsAdmin(sessionAdmin);
+        if (!sessionAdmin) {
+            setIsAdmin(false);
+        }
         setUser(null);
         setCharacter(null);
 
@@ -82,23 +84,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const adminLogin = async (email: string, pass: string) => {
-    // This remains a "fake" admin login, but now it correctly sets state
-    // which the login page can react to.
     if (email === 'admin@mundomitico.com' && pass === 'admin123') {
         sessionStorage.setItem('isAdmin', 'true');
         setIsAdmin(true);
-        // Setting user and char to null is important for a clean admin state
         setUser(null); 
         setCharacter(null);
-        return Promise.resolve(); // Indicate success
+        return Promise.resolve();
     } else {
         return Promise.reject(new Error('Credenciais de administrador inválidas.'));
     }
   };
 
   const logout = async () => {
-    await signOut(auth); // This will sign out Google users
-    sessionStorage.removeItem('isAdmin'); // This logs out the fake admin
+    await signOut(auth);
+    sessionStorage.removeItem('isAdmin');
     setIsAdmin(false);
     setUser(null);
     setCharacter(null);
@@ -114,7 +113,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const makeUserAdmin = async (userId: string) => {
     await makeUserAdminInDb(userId);
-    // If the admin is making themselves an admin, update the state
     if (user && user.uid === userId) {
         setIsAdmin(true);
     }
