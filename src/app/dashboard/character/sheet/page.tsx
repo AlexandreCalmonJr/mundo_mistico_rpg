@@ -4,7 +4,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import type { Character, Attribute, Race, GameClass, Mythology } from '@/lib/game-data';
+import type { Character, Attribute, Race, GameClass, Mythology, GameAttribute } from '@/lib/game-data';
 import { generateCharacterSheet, GenerateCharacterSheetOutput } from '@/ai/flows/generate-character-sheet';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { getCollection } from '@/services/firestore';
@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Swords, Shield, Wand, ArrowBigUpDash, Sparkles, BookCopy, ShieldPlus, PlusCircle, ArrowUpCircle, Heart } from 'lucide-react';
+import { Swords, Shield, Wand, ArrowBigUpDash, Sparkles, BookCopy, ShieldPlus, PlusCircle, ArrowUpCircle, Heart, Star } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const attributeIcons: { [key: string]: React.ElementType } = {
@@ -59,21 +59,24 @@ export default function CharacterSheetPage() {
   const [mythologies, setMythologies] = useState<Mythology[]>([]);
   const [races, setRaces] = useState<Race[]>([]);
   const [gameClasses, setGameClasses] = useState<GameClass[]>([]);
+  const [attributes, setAttributes] = useState<GameAttribute[]>([]);
 
   useEffect(() => {
     async function fetchGameData() {
         try {
-            const [mythologiesData, racesData, classesData] = await Promise.all([
+            const [mythologiesData, racesData, classesData, attributesData] = await Promise.all([
                 getCollection<Mythology>('mythologies'),
                 getCollection<Race>('races'),
                 getCollection<GameClass>('classes'),
+                getCollection<GameAttribute>('attributes'),
             ]);
             setMythologies(mythologiesData);
             setRaces(racesData);
             setGameClasses(classesData);
+            setAttributes(attributesData);
         } catch (error) {
             console.error("Failed to fetch game data for sheet:", error);
-            toast({ title: "Erro ao carregar dados", description: "Não foi possível carregar os dados de raças e classes.", variant: "destructive"});
+            toast({ title: "Erro ao carregar dados", description: "Não foi possível carregar os dados de jogo.", variant: "destructive"});
         }
     }
     fetchGameData();
@@ -126,7 +129,7 @@ export default function CharacterSheetPage() {
       return;
     }
 
-    if (races.length === 0 || gameClasses.length === 0 || mythologies.length === 0) {
+    if (races.length === 0 || gameClasses.length === 0 || mythologies.length === 0 || attributes.length === 0) {
         // Data not ready yet
         return;
     }
@@ -169,9 +172,11 @@ export default function CharacterSheetPage() {
                 classWeaknesses: classInfo.weaknesses,
                 raceAttributeModifiers: raceInfo.attributeModifiers || [],
                 classAttributeModifiers: classInfo.attributeModifiers || [],
+                availableAttributes: attributes.map(a => a.name),
             });
 
-            const baseHp = 100 + (result.attributes.find(a => a.name === 'Defesa')?.value || 0) / 2;
+            const defenseAttr = result.attributes.find(a => a.name.toLowerCase() === 'defesa')?.value || 0;
+            const baseHp = 100 + (defenseAttr / 2);
 
             const newCharacter: Character = {
               ...parsedChar,
@@ -208,7 +213,7 @@ export default function CharacterSheetPage() {
     }
 
     loadSheet();
-  }, [router, toast, races, gameClasses, mythologies]);
+  }, [router, toast, races, gameClasses, mythologies, attributes]);
 
 
   const handleAttributeIncrease = (attributeName: string) => {
@@ -334,7 +339,7 @@ export default function CharacterSheetPage() {
                         </CardHeader>
                         <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
                             {character.attributes.map(attr => {
-                                const Icon = attributeIcons[attr.name] || Shield;
+                                const Icon = attributeIcons[attr.name] || Star;
                                 return (
                                     <div key={attr.name}>
                                         <div className="flex items-center justify-between mb-1">
@@ -379,5 +384,3 @@ export default function CharacterSheetPage() {
     </main>
   );
 }
-
-    

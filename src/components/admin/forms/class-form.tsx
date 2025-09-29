@@ -24,7 +24,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { PlusCircle, Trash2 } from 'lucide-react';
-import type { Mythology } from '@/lib/game-data';
+import type { Mythology, GameAttribute } from '@/lib/game-data';
 
 const attributeModifierSchema = z.object({
     attribute: z.string().min(1, "Atributo é obrigatório."),
@@ -48,11 +48,10 @@ interface ClassFormProps {
   onSave: (data: z.infer<typeof formSchema>) => void;
   defaultValues: any;
   mythologies: Mythology[];
+  attributes: GameAttribute[];
 }
 
-const ATTRIBUTE_OPTIONS = ["Força", "Agilidade", "Inteligência", "Defesa"];
-
-export function ClassForm({ isOpen, onClose, onSave, defaultValues, mythologies }: ClassFormProps) {
+export function ClassForm({ isOpen, onClose, onSave, defaultValues, mythologies, attributes }: ClassFormProps) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -160,7 +159,7 @@ export function ClassForm({ isOpen, onClose, onSave, defaultValues, mythologies 
                                             <SelectTrigger><SelectValue placeholder="Atributo" /></SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
-                                            {ATTRIBUTE_OPTIONS.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}
+                                            {attributes.map(attr => <SelectItem key={attr.id} value={attr.name}>{attr.name}</SelectItem>)}
                                         </SelectContent>
                                     </Select>
                                 </FormItem>
@@ -202,4 +201,3 @@ export function ClassForm({ isOpen, onClose, onSave, defaultValues, mythologies 
     </Dialog>
   );
 }
-

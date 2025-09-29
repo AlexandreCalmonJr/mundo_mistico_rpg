@@ -12,6 +12,13 @@ import type { Character, GameClass, Race } from '@/lib/game-data';
 import { getCollection } from '@/services/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 
+const attributeIcons: { [key: string]: React.ElementType } = {
+  Força: Swords,
+  Agilidade: ArrowBigUpDash,
+  Inteligência: Wand,
+  Defesa: Shield,
+};
+
 export default function DashboardPage() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [character, setCharacter] = useState<Character | null>(null);
@@ -144,22 +151,15 @@ export default function DashboardPage() {
                     <CardTitle className="font-headline flex items-center gap-2"><Star className="text-primary"/> Atributos</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                     <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2"><Swords className="text-primary" size={18}/><span>Força</span></div>
-                        <span className="font-bold">{getAttributeValue('Força')}</span>
-                    </div>
-                     <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2"><Shield className="text-primary" size={18}/><span>Defesa</span></div>
-                        <span className="font-bold">{getAttributeValue('Defesa')}</span>
-                    </div>
-                     <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2"><ArrowBigUpDash className="text-primary" size={18}/><span>Agilidade</span></div>
-                        <span className="font-bold">{getAttributeValue('Agilidade')}</span>
-                    </div>
-                     <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2"><Wand className="text-primary" size={18}/><span>Inteligência</span></div>
-                        <span className="font-bold">{getAttributeValue('Inteligência')}</span>
-                    </div>
+                    {character.attributes.slice(0, 4).map(attribute => {
+                        const Icon = attributeIcons[attribute.name] || Star;
+                        return (
+                            <div key={attribute.name} className="flex items-center justify-between">
+                                <div className="flex items-center gap-2"><Icon className="text-primary" size={18}/><span>{attribute.name}</span></div>
+                                <span className="font-bold">{attribute.value}</span>
+                            </div>
+                        )
+                    })}
                 </CardContent>
             </Card>
 
@@ -205,5 +205,3 @@ export default function DashboardPage() {
     </main>
   );
 }
-
-    

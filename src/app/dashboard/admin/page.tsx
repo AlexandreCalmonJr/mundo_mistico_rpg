@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, Edit, Trash2, Sparkles } from 'lucide-react';
-import type { Mythology, GameClass, Race, GameMap, Character, ClassGroup, Clan, AttributeModifier, Ability, Weapon } from '@/lib/game-data';
+import type { Mythology, GameClass, Race, GameMap, Character, ClassGroup, Clan, AttributeModifier, Ability, Weapon, GameAttribute } from '@/lib/game-data';
 import { getCollection, addDocument, updateDocument, deleteDocument } from '@/services/firestore';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -17,6 +17,7 @@ import { ClanForm } from '@/components/admin/forms/clan-form';
 import { AbilityForm } from '@/components/admin/forms/ability-form';
 import { WeaponForm } from '@/components/admin/forms/weapon-form';
 import { MythologyForm } from '@/components/admin/forms/mythology-form';
+import { AttributeForm } from '@/components/admin/forms/attribute-form';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -39,12 +40,12 @@ const initialUsers: any[] = [
     { id: 'user-3', name: 'Jogador2', email: 'jogador2@email.com', role: 'Player' },
 ];
 
-type DataType = 'class' | 'race' | 'map' | 'user' | 'class-group' | 'clan' | 'ability' | 'weapon' | 'mythology';
+type DataType = 'class' | 'race' | 'map' | 'user' | 'class-group' | 'clan' | 'ability' | 'weapon' | 'mythology' | 'attribute';
 type DialogState = {
   isOpen: boolean;
   mode: 'add' | 'edit';
   type: DataType | null;
-  data: GameClass | Race | GameMap | ClassGroup | Clan | Ability | Weapon | Mythology | any | null;
+  data: GameClass | Race | GameMap | ClassGroup | Clan | Ability | Weapon | Mythology | GameAttribute | any | null;
 }
 
 const formatModifiers = (modifiers: AttributeModifier[]) => {
@@ -63,6 +64,7 @@ export default function AdminPage() {
   const [clans, setClans] = useState<Clan[]>([]);
   const [abilities, setAbilities] = useState<Ability[]>([]);
   const [weapons, setWeapons] = useState<Weapon[]>([]);
+  const [attributes, setAttributes] = useState<GameAttribute[]>([]);
   const [loading, setLoading] = useState(true);
   
   const [dialogState, setDialogState] = useState<DialogState>({ isOpen: false, mode: 'add', type: null, data: null });
@@ -80,7 +82,8 @@ export default function AdminPage() {
             groupsFromDb, 
             abilitiesFromDb, 
             weaponsFromDb, 
-            clansFromDb
+            clansFromDb,
+            attributesFromDb
         ] = await Promise.all([
           getCollection<Mythology>('mythologies'),
           getCollection<GameClass>('classes'),
@@ -90,6 +93,7 @@ export default function AdminPage() {
           getCollection<Ability>('abilities'),
           getCollection<Weapon>('weapons'),
           getCollection<Clan>('clans'),
+          getCollection<GameAttribute>('attributes'),
         ]);
         setMythologies(mythologiesFromDb);
         setGameClasses(classesFromDb);
@@ -99,6 +103,7 @@ export default function AdminPage() {
         setAbilities(abilitiesFromDb);
         setWeapons(weaponsFromDb);
         setClans(clansFromDb);
+        setAttributes(attributesFromDb);
       } catch (error) {
         console.error("Failed to fetch game data:", error);
         toast({
@@ -114,7 +119,7 @@ export default function AdminPage() {
   }, [toast]);
 
 
-  const handleOpenDialog = (mode: 'add' | 'edit', type: DataType, data: GameClass | Race | GameMap | ClassGroup | Clan | Ability | Weapon | Mythology | null = null) => {
+  const handleOpenDialog = (mode: 'add' | 'edit', type: DataType, data: GameClass | Race | GameMap | ClassGroup | Clan | Ability | Weapon | Mythology | GameAttribute | null = null) => {
     setDialogState({ isOpen: true, mode, type, data });
   };
   
@@ -140,6 +145,7 @@ export default function AdminPage() {
         case 'ability': collectionName = 'abilities'; break;
         case 'weapon': collectionName = 'weapons'; break;
         case 'clan': collectionName = 'clans'; break;
+        case 'attribute': collectionName = 'attributes'; break;
         case 'user':
           setUsers(prev => prev.filter(item => item.id !== deleteConfirm.id));
            toast({ title: "Usuário excluído com sucesso!" });
@@ -161,6 +167,7 @@ export default function AdminPage() {
          case 'ability': setAbilities(prev => prev.filter(item => item.id !== deleteConfirm.id)); break;
          case 'weapon': setWeapons(prev => prev.filter(item => item.id !== deleteConfirm.id)); break;
          case 'clan': setClans(prev => prev.filter(item => item.id !== deleteConfirm.id)); break;
+         case 'attribute': setAttributes(prev => prev.filter(item => item.id !== deleteConfirm.id)); break;
       }
       toast({ title: "Item excluído com sucesso!" });
     } catch (error) {
@@ -196,6 +203,8 @@ export default function AdminPage() {
                 collectionName = 'weapons'; setData = setWeapons; successMsg = 'Arma'; break;
             case 'clan':
                 collectionName = 'clans'; setData = setClans; successMsg = 'Clã'; break;
+            case 'attribute':
+                collectionName = 'attributes'; setData = setAttributes; successMsg = 'Atributo'; break;
             case 'user':
                 if (!isEditing) {
                     setUsers(prev => [...prev, { ...data, id: `user-${Date.now()}` }]);
@@ -241,13 +250,14 @@ export default function AdminPage() {
 
     switch (dialogState.type) {
       case 'mythology': return <MythologyForm {...props} />;
-      case 'class': return <ClassForm {...props} mythologies={mythologies} />;
-      case 'race': return <RaceForm {...props} mythologies={mythologies} />;
+      case 'class': return <ClassForm {...props} mythologies={mythologies} attributes={attributes} />;
+      case 'race': return <RaceForm {...props} mythologies={mythologies} attributes={attributes} />;
       case 'map': return <MapForm {...props} />;
       case 'class-group': return <ClassGroupForm {...props} gameClasses={gameClasses} />;
       case 'clan': return <ClanForm {...props} />;
       case 'ability': return <AbilityForm {...props} gameClasses={gameClasses}/>;
       case 'weapon': return <WeaponForm {...props} gameClasses={gameClasses}/>;
+      case 'attribute': return <AttributeForm {...props} />;
       // case 'user': return <UserForm {...props} />;
       default: return null;
     }
@@ -264,6 +274,25 @@ export default function AdminPage() {
             <Edit className="h-4 w-4" />
           </Button>
           <Button variant="destructive" size="sm" onClick={() => handleDelete('mythology', row.original.id)}>
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      ),
+    },
+  ];
+
+  const attributeColumns = [
+    { accessorKey: 'name', header: 'Nome' },
+    { accessorKey: 'description', header: 'Descrição' },
+    { accessorKey: 'id', header: 'ID' },
+    {
+      id: 'actions',
+      cell: ({ row }: { row: { original: any } }) => (
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => handleOpenDialog('edit', 'attribute', row.original)}>
+            <Edit className="h-4 w-4" />
+          </Button>
+          <Button variant="destructive" size="sm" onClick={() => handleDelete('attribute', row.original.id)}>
             <Trash2 className="h-4 w-4" />
           </Button>
         </div>
@@ -480,6 +509,7 @@ export default function AdminPage() {
         <Tabs defaultValue="classes">
           <TabsList className="mb-4">
             <TabsTrigger value="mythologies">Mitologias</TabsTrigger>
+            <TabsTrigger value="attributes">Atributos</TabsTrigger>
             <TabsTrigger value="classes">Classes</TabsTrigger>
             <TabsTrigger value="races">Raças</TabsTrigger>
             <TabsTrigger value="abilities">Habilidades</TabsTrigger>
@@ -497,6 +527,15 @@ export default function AdminPage() {
               </Button>
             </div>
             <DataTable columns={mythologyColumns} data={mythologies} />
+          </TabsContent>
+
+          <TabsContent value="attributes">
+            <div className="flex justify-end mb-4">
+              <Button onClick={() => handleOpenDialog('add', 'attribute')}>
+                <PlusCircle className="mr-2 h-4 w-4" /> Adicionar Atributo
+              </Button>
+            </div>
+            <DataTable columns={attributeColumns} data={attributes} />
           </TabsContent>
 
           <TabsContent value="classes">
@@ -593,4 +632,3 @@ export default function AdminPage() {
     </main>
   );
 }
-

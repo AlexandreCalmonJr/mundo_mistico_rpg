@@ -1,4 +1,5 @@
 
+
 export type Attribute = {
   name: string;
   value: number;
@@ -69,6 +70,12 @@ export type GameMap = {
     description: string;
 }
 
+export type GameAttribute = {
+    id: string;
+    name: string;
+    description: string;
+}
+
 export type Character = {
   id: string;
   name: string;
@@ -124,4 +131,3 @@ export const enemies: Enemy[] = [
         defense: 30,
     }
 ];
-
