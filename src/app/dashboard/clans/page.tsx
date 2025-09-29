@@ -7,21 +7,42 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { clans as initialClans } from '@/lib/game-data';
 import type { Clan } from '@/lib/game-data';
-import { Users, UserPlus } from 'lucide-react';
+import { Users, UserPlus, PlusCircle } from 'lucide-react';
+import { ClanForm } from '@/components/admin/forms/clan-form';
+
 
 export default function ClansPage() {
   const [clans, setClans] = useState<Clan[]>(initialClans);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
-  // Função de placeholder, já que não há sistema de usuário real
   const handleJoinClan = (clanId: string) => {
     alert(`Pedido para entrar no clã ${clanId} enviado! (funcionalidade simulada)`);
+  };
+
+  const handleSaveClan = (newClanData: Omit<Clan, 'id' | 'members'>) => {
+    const newClan: Clan = {
+      ...newClanData,
+      id: `clan-${Date.now()}`,
+      members: ['Criador'], // Placeholder for the creator
+    };
+    setClans(prevClans => [...prevClans, newClan]);
+    setIsCreateDialogOpen(false);
   };
 
   return (
     <main className="p-4 sm:p-6 lg:p-8">
       <div className="container mx-auto">
-        <h1 className="text-3xl font-headline font-bold text-primary mb-2">Clãs do Mundo Mítico</h1>
-        <p className="text-muted-foreground mb-8">Encontre aliados, junte-se a uma guilda e conquiste desafios em equipe.</p>
+        <div className="flex justify-between items-center mb-8">
+            <div>
+                <h1 className="text-3xl font-headline font-bold text-primary mb-2">Clãs do Mundo Mítico</h1>
+                <p className="text-muted-foreground">Encontre aliados, junte-se a uma guilda e conquiste desafios em equipe.</p>
+            </div>
+            <Button onClick={() => setIsCreateDialogOpen(true)}>
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Criar Novo Clã
+            </Button>
+        </div>
+
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {clans.map((clan) => (
@@ -54,6 +75,14 @@ export default function ClansPage() {
           ))}
         </div>
       </div>
+      
+      <ClanForm 
+        isOpen={isCreateDialogOpen}
+        onClose={() => setIsCreateDialogOpen(false)}
+        onSave={handleSaveClan}
+        defaultValues={null}
+      />
+
     </main>
   );
 }
