@@ -1,8 +1,9 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Edit, Trash2 } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, Sparkles } from 'lucide-react';
 import { races as initialRaces, gameMaps as initialMaps, classGroups as initialClassGroups, clans as initialClans, mythologies, abilities as initialAbilities, weapons as initialWeapons } from '@/lib/game-data';
 import type { GameClass, Race, GameMap, Character, ClassGroup, Clan, AttributeModifier, Ability, Weapon } from '@/lib/game-data';
 import { getCollection, addDocument, updateDocument, deleteDocument } from '@/services/firestore';
@@ -28,6 +29,8 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { ContentGenerator } from '@/components/admin/content-generator';
 
 
 const initialUsers: any[] = [
@@ -416,8 +419,30 @@ export default function AdminPage() {
   return (
     <main className="p-4 sm:p-6 lg:p-8">
       <div className="container mx-auto">
-        <h1 className="text-3xl font-headline font-bold text-accent mb-2">Painel de Administração</h1>
-        <p className="text-muted-foreground mb-8">Gerencie o conteúdo e as configurações do Mundo Mítico.</p>
+        <div className="flex justify-between items-start mb-6">
+            <div>
+                 <h1 className="text-3xl font-headline font-bold text-accent mb-2">Painel de Administração</h1>
+                 <p className="text-muted-foreground">Gerencie o conteúdo e as configurações do Mundo Mítico.</p>
+            </div>
+            <Dialog>
+                <DialogTrigger asChild>
+                    <Button variant="outline">
+                        <Sparkles className="mr-2 h-4 w-4" />
+                        Gerar Conteúdo com IA
+                    </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-2xl">
+                    <DialogHeader>
+                        <DialogTitle>Gerador de Conteúdo com IA</DialogTitle>
+                        <DialogDescription>
+                            Selecione o tipo de conteúdo e descreva o que você quer criar. A IA gerará uma estrutura JSON para você.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <ContentGenerator />
+                </DialogContent>
+            </Dialog>
+        </div>
+
 
         <Tabs defaultValue="classes">
           <TabsList className="mb-4">
