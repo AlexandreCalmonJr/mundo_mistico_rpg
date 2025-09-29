@@ -1,3 +1,4 @@
+
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -9,20 +10,23 @@ export default function Home() {
   const heroImage = PlaceHolderImages.find((img) => img.id === 'hero-background');
 
   return (
-    <div className="relative min-h-screen w-full">
-      {heroImage && (
-        <Image
-          src={heroImage.imageUrl}
-          alt={heroImage.description}
-          fill
-          className="object-cover"
-          priority
-          data-ai-hint={heroImage.imageHint}
-        />
-      )}
-      <div className="absolute inset-0 bg-background/70 backdrop-blur-sm" />
+    <div className="relative flex flex-col min-h-screen w-full">
+      <div className="absolute inset-0">
+        {heroImage && (
+            <Image
+            src={heroImage.imageUrl}
+            alt={heroImage.description}
+            fill
+            className="object-cover"
+            priority
+            data-ai-hint={heroImage.imageHint}
+            />
+        )}
+        <div className="absolute inset-0 bg-background/70 backdrop-blur-sm" />
+      </div>
 
-      <header className="absolute top-0 left-0 right-0 p-4 sm:p-6">
+
+      <header className="relative z-10 p-4 sm:p-6">
         <div className="container mx-auto flex items-center justify-between">
           <Logo />
           <div className="flex items-center gap-2">
@@ -36,7 +40,7 @@ export default function Home() {
         </div>
       </header>
 
-      <main className="relative z-10 flex min-h-screen items-center justify-center">
+      <main className="relative z-10 flex flex-grow items-center justify-center">
         <div className="container mx-auto flex flex-col items-center text-center px-4">
           <h1 className="font-headline text-5xl md:text-7xl font-bold text-primary animate-fade-in-down">
             Mundo Mítico
@@ -51,6 +55,12 @@ export default function Home() {
           </div>
         </div>
       </main>
+
+       <footer className="relative z-10 p-4 text-center text-xs text-muted-foreground">
+          <Link href="/admin-login" className="underline hover:text-primary">
+            Acesso para Administradores
+          </Link>
+      </footer>
     </div>
   );
 }

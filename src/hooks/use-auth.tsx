@@ -3,7 +3,7 @@
 'use client';
 
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
-import { getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup, User } from 'firebase/auth';
+import { getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup, User, signInWithEmailAndPassword } from 'firebase/auth';
 import { app } from '@/lib/firebase-config';
 import { useRouter, usePathname } from 'next/navigation';
 import { getDocument, setDocument, checkAdminStatus } from '@/services/firestore';
@@ -17,7 +17,7 @@ interface AuthContextType {
   loading: boolean;
   isAdmin: boolean;
   signInWithGoogle: () => Promise<void>;
-  adminLogin: (email: string, pass: string) => void;
+  adminLogin: (email: string, pass: string) => Promise<void>;
   logout: () => Promise<void>;
   saveCharacter: (characterData: Character) => Promise<void>;
 }
@@ -38,35 +38,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setLoading(true);
       
-      const localAdmin = sessionStorage.getItem('isAdmin') === 'true';
-      
       if (user) {
         setUser(user);
         
         const adminStatus = await checkAdminStatus(user.uid);
-        setIsAdmin(adminStatus || localAdmin);
+        setIsAdmin(adminStatus);
+        
+        if (adminStatus) {
+            sessionStorage.setItem('isAdmin', 'true');
+        } else {
+            sessionStorage.removeItem('isAdmin');
+        }
 
         const char = await getDocument<Character>('characters', user.uid);
         setCharacter(char);
 
         const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
-        if (isProtectedRoute && !char && !pathname.startsWith('/dashboard/character/create') && !pathname.startsWith('/dashboard/admin')) {
+        if (isProtectedRoute && !char && !pathname.startsWith('/dashboard/character/create') && !adminStatus) {
             router.push('/dashboard/character/create');
-        } else if (!isProtectedRoute && pathname !== '/') {
-            router.push('/dashboard');
         }
 
-      } else if (localAdmin) {
-        setUser(null);
-        setCharacter(null);
-        setIsAdmin(true);
-        // keep admin logged in
       } else {
+        const localAdmin = sessionStorage.getItem('isAdmin') === 'true';
         setUser(null);
         setCharacter(null);
-        setIsAdmin(false);
+        setIsAdmin(localAdmin);
+
         const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
-        if (isProtectedRoute) {
+        if (isProtectedRoute && !localAdmin) {
           router.push('/login');
         }
       }
@@ -86,7 +85,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const adminLogin = (email: string, pass: string) => {
+  const adminLogin = async (email: string, pass: string) => {
+    // This is a "fake" admin login for demonstration.
+    // In a real app, you would use Firebase Auth with custom claims or a separate admin user system.
     if (email === 'admin@mundomitico.com' && pass === 'admin123') {
         sessionStorage.setItem('isAdmin', 'true');
         setIsAdmin(true);
@@ -101,6 +102,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     await signOut(auth);
     sessionStorage.removeItem('isAdmin');
     setIsAdmin(false);
+    setUser(null);
+    setCharacter(null);
+    router.push('/login');
   };
   
   const saveCharacter = async (characterData: Character) => {
