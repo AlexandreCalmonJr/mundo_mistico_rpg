@@ -2,7 +2,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -37,7 +37,7 @@ const formSchema = z.object({
   type: z.enum(['Ataque', 'Defesa', 'Suporte', 'Utilidade']),
   cost: z.coerce.number().min(0, 'O custo deve ser 0 ou mais.'),
   levelRequirement: z.coerce.number().min(1, 'O nível deve ser pelo menos 1.'),
-  classId: z.string().optional().default('any'),
+  classId: z.string().optional(),
 });
 
 interface AbilityFormProps {
@@ -58,16 +58,27 @@ export function AbilityForm({ isOpen, onClose, onSave, defaultValues, gameClasse
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      id: defaultValues?.id || undefined,
-      name: defaultValues?.name || '',
-      description: defaultValues?.description || '',
-      type: defaultValues?.type || 'Ataque',
-      cost: defaultValues?.cost || 0,
-      levelRequirement: defaultValues?.levelRequirement || 1,
-      classId: defaultValues?.classId || 'any',
+    defaultValues: defaultValues || {
+        name: '',
+        description: '',
+        type: 'Ataque',
+        cost: 0,
+        levelRequirement: 1,
+        classId: 'any'
     },
   });
+
+   useEffect(() => {
+    form.reset(defaultValues || {
+        name: '',
+        description: '',
+        type: 'Ataque',
+        cost: 0,
+        levelRequirement: 1,
+        classId: 'any'
+    });
+  }, [defaultValues, form]);
+
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     // If classId is 'any', save it as an empty string or undefined in the database
@@ -89,11 +100,11 @@ export function AbilityForm({ isOpen, onClose, onSave, defaultValues, gameClasse
         const abilityData = JSON.parse(result.generatedJson);
 
         // Populate form with AI generated data
-        form.setValue('name', abilityData.name || '');
-        form.setValue('description', abilityData.description || '');
-        form.setValue('type', abilityData.type || 'Ataque');
-        form.setValue('cost', abilityData.cost || 0);
-        form.setValue('levelRequirement', abilityData.levelRequirement || 1);
+        // IMPORTANT: Reset the ID to undefined to ensure this is treated as a new document
+        form.reset({
+            ...abilityData,
+            id: undefined, 
+        });
         
         toast({ title: "Habilidade gerada com sucesso!", description: "Revise os campos e salve." });
         setShowAIGenerator(false);

@@ -166,7 +166,8 @@ export default function AdminPage() {
 
 
   const handleSave = async (type: DataType, data: any) => {
-    const id = data.id;
+    const isEditing = dialogState.mode === 'edit' && data.id;
+
     try {
         let collectionName: string = '';
         let setData: React.Dispatch<React.SetStateAction<any[]>>;
@@ -188,10 +189,10 @@ export default function AdminPage() {
             case 'clan':
                 collectionName = 'clans'; setData = setClans; successMsg = 'Clã'; break;
             case 'user':
-                if (dialogState.mode === 'add') {
+                if (!isEditing) {
                     setUsers(prev => [...prev, { ...data, id: `user-${Date.now()}` }]);
                 } else {
-                    setUsers(prev => prev.map(item => item.id === id ? data : item));
+                    setUsers(prev => prev.map(item => item.id === data.id ? data : item));
                 }
                 toast({ title: "Usuário salvo com sucesso!" });
                 handleCloseDialog();
@@ -200,15 +201,17 @@ export default function AdminPage() {
                 toast({title: "Tipo inválido", description: "O tipo de dado para salvar é inválido.", variant: 'destructive'});
                 return;
         }
+        
+        const { id, ...dataToSave } = data;
 
-        if (dialogState.mode === 'add') {
-            const newId = await addDocument(collectionName, data);
-            setData(prev => [...prev, { ...data, id: newId }]);
-            toast({ title: `${successMsg} adicionado(a) com sucesso!` });
-        } else {
-            await updateDocument(collectionName, id, data);
+        if (isEditing) {
+            await updateDocument(collectionName, id, dataToSave);
             setData(prev => prev.map(item => item.id === id ? data : item));
             toast({ title: `${successMsg} atualizado(a) com sucesso!` });
+        } else {
+            const newId = await addDocument(collectionName, dataToSave);
+            setData(prev => [...prev, { ...data, id: newId }]);
+            toast({ title: `${successMsg} adicionado(a) com sucesso!` });
         }
 
     } catch(error) {
@@ -225,7 +228,7 @@ export default function AdminPage() {
       isOpen: dialogState.isOpen,
       onClose: handleCloseDialog,
       onSave: (data: any) => handleSave(dialogState.type!, data),
-      defaultValues: dialogState.mode === 'edit' ? dialogState.data : null,
+      defaultValues: dialogState.data,
     };
 
     switch (dialogState.type) {
@@ -553,5 +556,3 @@ export default function AdminPage() {
     </main>
   );
 }
-
-    
