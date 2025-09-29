@@ -35,9 +35,8 @@ export default function AdminLoginPage() {
     setIsLoggingIn(true);
     try {
       await adminLogin(email, password);
-      // On success, redirect to dashboard.
-      // The useAuth hook will persist the admin state.
-      router.push('/dashboard');
+      // On success, the useEffect above will handle the redirect
+      // This ensures we wait for the isAdmin state to be confirmed.
     } catch(err) {
       if (err instanceof Error) {
         toast({

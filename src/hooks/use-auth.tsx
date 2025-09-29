@@ -42,26 +42,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(user);
         const adminStatus = await checkAdminStatus(user.uid);
         setIsAdmin(adminStatus);
+        sessionStorage.removeItem('isAdmin'); // Clear session admin if firebase user exists
         
         const char = await getDocument<Character>('characters', user.uid);
         setCharacter(char);
         
-        // This is for regular user flow, not admin
         const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
         if (isProtectedRoute && !char && !pathname.startsWith('/dashboard/character/create') && !adminStatus) {
             router.push('/dashboard/character/create');
         }
 
       } else {
-        // If no firebase user, check if there's an admin session and preserve it.
+        // No firebase user, check for session admin
         const sessionAdmin = sessionStorage.getItem('isAdmin') === 'true';
-        if (!sessionAdmin) {
-            setIsAdmin(false);
-        }
+        setIsAdmin(sessionAdmin);
         setUser(null);
         setCharacter(null);
 
         const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
+        // Redirect ONLY if it's a protected route AND the user is not a session admin
         if (isProtectedRoute && !sessionAdmin) {
           router.push('/login');
         }
@@ -89,6 +88,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setIsAdmin(true);
         setUser(null); 
         setCharacter(null);
+        setLoading(false); // Explicitly set loading to false
         return Promise.resolve();
     } else {
         return Promise.reject(new Error('Credenciais de administrador inválidas.'));
