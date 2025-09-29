@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, Edit, Trash2 } from 'lucide-react';
 import { gameClasses as initialClasses, races as initialRaces, temples as initialTemples } from '@/lib/game-data';
-import type { GameClass, Race, Temple } from '@/lib/game-data';
+import type { GameClass, Race, Temple, Character } from '@/lib/game-data';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DataTable } from '@/components/admin/data-table';
@@ -24,18 +24,25 @@ import {
 } from "@/components/ui/alert-dialog"
 
 
-type DataType = 'class' | 'race' | 'temple';
+const initialUsers: any[] = [
+    { id: 'user-1', name: 'Admin', email: 'admin@mundomitico.com', role: 'Admin' },
+    { id: 'user-2', name: 'Jogador1', email: 'jogador1@email.com', role: 'Player' },
+    { id: 'user-3', name: 'Jogador2', email: 'jogador2@email.com', role: 'Player' },
+];
+
+type DataType = 'class' | 'race' | 'temple' | 'user';
 type DialogState = {
   isOpen: boolean;
   mode: 'add' | 'edit';
   type: DataType | null;
-  data: GameClass | Race | Temple | null;
+  data: GameClass | Race | Temple | any | null;
 }
 
 export default function AdminPage() {
   const [gameClasses, setGameClasses] = useState<GameClass[]>(initialClasses);
   const [races, setRaces] = useState<Race[]>(initialRaces);
   const [temples, setTemples] = useState<Temple[]>(initialTemples);
+  const [users, setUsers] = useState<any[]>(initialUsers);
   
   const [dialogState, setDialogState] = useState<DialogState>({ isOpen: false, mode: 'add', type: null, data: null });
   const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean, type: DataType | null, id: string | null }>({ isOpen: false, type: null, id: null });
@@ -66,6 +73,9 @@ export default function AdminPage() {
       case 'temple':
         setTemples(prev => prev.filter(item => item.type !== deleteConfirm.id));
         break;
+      case 'user':
+        setUsers(prev => prev.filter(item => item.id !== deleteConfirm.id));
+        break;
     }
     setDeleteConfirm({ isOpen: false, type: null, id: null });
   };
@@ -95,6 +105,13 @@ export default function AdminPage() {
           setTemples(prev => prev.map(item => item.type === id ? data : item));
         }
         break;
+      case 'user':
+        if (dialogState.mode === 'add') {
+          setUsers(prev => [...prev, { ...data, id: `user-${Date.now()}` }]);
+        } else {
+          setUsers(prev => prev.map(item => item.id === id ? data : item));
+        }
+        break;
     }
     handleCloseDialog();
   };
@@ -113,27 +130,87 @@ export default function AdminPage() {
       case 'class': return <ClassForm {...props} />;
       case 'race': return <RaceForm {...props} />;
       case 'temple': return <TempleForm {...props} />;
+      // case 'user': return <UserForm {...props} />;
       default: return null;
     }
   }
-
-  const columns = (type: DataType) => [
+  
+  const classColumns = [
     { accessorKey: 'name', header: 'Nome' },
     { accessorKey: 'description', header: 'Descrição' },
+    { accessorKey: 'strengths', header: 'Pontos Fortes', cell: ({row}: any) => row.original.strengths.join(', ') },
+    { accessorKey: 'weaknesses', header: 'Pontos Fracos', cell: ({row}: any) => row.original.weaknesses.join(', ') },
     {
       id: 'actions',
       cell: ({ row }: { row: { original: any } }) => (
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => handleOpenDialog('edit', type, row.original)}>
+          <Button variant="outline" size="sm" onClick={() => handleOpenDialog('edit', 'class', row.original)}>
             <Edit className="h-4 w-4" />
           </Button>
-          <Button variant="destructive" size="sm" onClick={() => handleDelete(type, row.original.id || row.original.type)}>
+          <Button variant="destructive" size="sm" onClick={() => handleDelete('class', row.original.id)}>
             <Trash2 className="h-4 w-4" />
           </Button>
         </div>
       ),
     },
   ];
+  
+  const raceColumns = [
+    { accessorKey: 'name', header: 'Nome' },
+    { accessorKey: 'description', header: 'Descrição' },
+    {
+      id: 'actions',
+      cell: ({ row }: { row: { original: any } }) => (
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => handleOpenDialog('edit', 'race', row.original)}>
+            <Edit className="h-4 w-4" />
+          </Button>
+          <Button variant="destructive" size="sm" onClick={() => handleDelete('race', row.original.id)}>
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      ),
+    },
+  ];
+
+  const templeColumns = [
+    { accessorKey: 'name', header: 'Nome' },
+    { accessorKey: 'description', header: 'Descrição' },
+    { accessorKey: 'type', header: 'Tipo' },
+    {
+      id: 'actions',
+      cell: ({ row }: { row: { original: any } }) => (
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => handleOpenDialog('edit', 'temple', row.original)}>
+            <Edit className="h-4 w-4" />
+          </Button>
+          <Button variant="destructive" size="sm" onClick={() => handleDelete('temple', row.original.type)}>
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      ),
+    },
+  ];
+
+  const userColumns = [
+    { accessorKey: 'name', header: 'Nome' },
+    { accessorKey: 'email', header: 'Email' },
+    { accessorKey: 'role', header: 'Função' },
+    {
+      id: 'actions',
+      cell: ({ row }: { row: { original: any } }) => (
+        <div className="flex gap-2">
+           <Button variant="outline" size="sm" disabled>
+            <Edit className="h-4 w-4" />
+          </Button>
+          <Button variant="destructive" size="sm" onClick={() => handleDelete('user', row.original.id)}>
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      ),
+    },
+  ];
+
 
   return (
     <main className="p-4 sm:p-6 lg:p-8">
@@ -146,6 +223,7 @@ export default function AdminPage() {
             <TabsTrigger value="classes">Classes</TabsTrigger>
             <TabsTrigger value="races">Raças</TabsTrigger>
             <TabsTrigger value="temples">Templos</TabsTrigger>
+            <TabsTrigger value="users">Usuários</TabsTrigger>
           </TabsList>
 
           <TabsContent value="classes">
@@ -154,7 +232,7 @@ export default function AdminPage() {
                 <PlusCircle className="mr-2 h-4 w-4" /> Adicionar Classe
               </Button>
             </div>
-            <DataTable columns={columns('class')} data={gameClasses} />
+            <DataTable columns={classColumns} data={gameClasses} />
           </TabsContent>
 
           <TabsContent value="races">
@@ -163,7 +241,7 @@ export default function AdminPage() {
                 <PlusCircle className="mr-2 h-4 w-4" /> Adicionar Raça
               </Button>
             </div>
-            <DataTable columns={columns('race')} data={races} />
+            <DataTable columns={raceColumns} data={races} />
           </TabsContent>
 
           <TabsContent value="temples">
@@ -172,7 +250,16 @@ export default function AdminPage() {
                 <PlusCircle className="mr-2 h-4 w-4" /> Adicionar Templo
               </Button>
             </div>
-            <DataTable columns={columns('temple')} data={temples} />
+            <DataTable columns={templeColumns} data={temples} />
+          </TabsContent>
+
+          <TabsContent value="users">
+            <div className="flex justify-end mb-4">
+               <Button disabled>
+                <PlusCircle className="mr-2 h-4 w-4" /> Adicionar Usuário
+              </Button>
+            </div>
+            <DataTable columns={userColumns} data={users} />
           </TabsContent>
         </Tabs>
       </div>
@@ -197,3 +284,5 @@ export default function AdminPage() {
     </main>
   );
 }
+
+    
