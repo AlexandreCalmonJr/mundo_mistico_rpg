@@ -117,7 +117,7 @@ Use as seguintes estruturas como modelo para cada tipo de conteúdo. Preencha to
 \`\`\`
 
 **Se o tipo for "Grupo de Classe":**
-\`\``json
+\`\`\`json
 {
   "id": "gerado-pela-ia-id-unico",
   "name": "Nome do Grupo/Evolução",
@@ -141,5 +141,3 @@ const generateGameContentFlow = ai.defineFlow(
     return output!;
   }
 );
-
-    
