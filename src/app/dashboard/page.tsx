@@ -11,6 +11,8 @@ import Link from 'next/link';
 import type { Character, GameClass, Race } from '@/lib/game-data';
 import { getCollection } from '@/services/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useAuth } from '@/hooks/use-auth';
+import { useRouter } from 'next/navigation';
 
 const attributeIcons: { [key: string]: React.ElementType } = {
   Força: Swords,
@@ -20,28 +22,25 @@ const attributeIcons: { [key: string]: React.ElementType } = {
 };
 
 export default function DashboardPage() {
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [character, setCharacter] = useState<Character | null>(null);
+  const { user, character, loading: authLoading, isAdmin } = useAuth();
   const [loading, setLoading] = useState(true);
   const [gameClasses, setGameClasses] = useState<GameClass[]>([]);
   const [races, setRaces] = useState<Race[]>([]);
+  const router = useRouter();
+
 
   useEffect(() => {
+    if(authLoading) return; // Wait until auth state is determined
+    if(!user) {
+        router.push('/login');
+        return;
+    }
+    if(!character || !character.attributes) {
+        router.push('/dashboard/character/create');
+        return;
+    }
+
     async function fetchData() {
-        const adminStatus = localStorage.getItem('isAdmin') === 'true';
-        setIsAdmin(adminStatus);
-
-        const charData = localStorage.getItem('character');
-        if (charData) {
-            setCharacter(JSON.parse(charData));
-        } else {
-            // Redirect happens client-side to avoid server-side redirect issues with localStorage
-            if (typeof window !== 'undefined') {
-                window.location.href = '/dashboard/character/create';
-            }
-            return;
-        }
-
         try {
             const [classesData, racesData] = await Promise.all([
                 getCollection<GameClass>('classes'),
@@ -56,7 +55,7 @@ export default function DashboardPage() {
         }
     }
     fetchData();
-  }, []);
+  }, [user, character, authLoading, router]);
 
   const getCharacterDescription = () => {
     if (!character || !races.length || !gameClasses.length) return '';
@@ -74,7 +73,7 @@ export default function DashboardPage() {
     return character.attributes.find(a => a.name === name)?.value || 0;
   }
 
-  if (loading || !character) {
+  if (loading || authLoading || !character || !character.attributes) {
     return (
         <main className="p-4 sm:p-6 lg:p-8">
           <div className="container mx-auto grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">

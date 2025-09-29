@@ -16,6 +16,7 @@ import { Button } from '../ui/button';
 import { LayoutDashboard, User, Map, MessageSquare, Users2, Crown, LogOut, Sparkles, Swords, ShieldPlus, GitMerge } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { useEffect, useState } from 'react';
+import { useAuth } from '@/hooks/use-auth';
 
 
 const menuItems = [
@@ -51,12 +52,8 @@ function SidebarLogo() {
 
 export function MainSidebar() {
   const pathname = usePathname();
-  const [isAdmin, setIsAdmin] = useState(false);
+  const { user, character, isAdmin, logout } = useAuth();
 
-  useEffect(() => {
-    const adminStatus = localStorage.getItem('isAdmin') === 'true';
-    setIsAdmin(adminStatus);
-  }, []);
 
   return (
     <Sidebar variant="inset" collapsible="icon">
@@ -105,16 +102,16 @@ export function MainSidebar() {
       <SidebarFooter>
          <div className="flex items-center gap-3">
             <Avatar>
-                <AvatarImage src="https://picsum.photos/seed/adventurer/40/40" />
-                <AvatarFallback>AV</AvatarFallback>
+                <AvatarImage src={user?.photoURL || "https://picsum.photos/seed/adventurer/40/40"} />
+                <AvatarFallback>{user?.displayName?.charAt(0) || 'A'}</AvatarFallback>
             </Avatar>
             <div className="flex flex-col">
-                <span className="text-sm font-semibold">Aventureiro</span>
-                <span className="text-xs text-muted-foreground">Nível 1 Explorador</span>
+                <span className="text-sm font-semibold">{character?.name || user?.displayName || 'Aventureiro'}</span>
+                <span className="text-xs text-muted-foreground">Nível {character?.level || 0}</span>
             </div>
          </div>
-         <Button asChild variant="ghost" className="w-full justify-start gap-2">
-            <Link href="/">
+         <Button asChild variant="ghost" className="w-full justify-start gap-2" onClick={logout}>
+            <Link href="#">
                 <LogOut className="size-4" />
                 <span className="group-data-[collapsible=icon]:hidden">Sair</span>
             </Link>

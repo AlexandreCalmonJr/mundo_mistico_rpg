@@ -8,6 +8,7 @@ import type { Character, Attribute, Race, GameClass, Mythology, GameAttribute } 
 import { generateCharacterSheet, GenerateCharacterSheetOutput } from '@/ai/flows/generate-character-sheet';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { getCollection } from '@/services/firestore';
+import { useAuth } from '@/hooks/use-auth';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -53,13 +54,16 @@ const POINTS_PER_LEVEL = 5;
 export default function CharacterSheetPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const [character, setCharacter] = useState<Character | null>(null);
+  const { user, character, saveCharacter, loading: authLoading } = useAuth();
+  
   const [sheet, setSheet] = useState<Pick<GenerateCharacterSheetOutput, 'backstory' | 'suggestedEquipment' | 'initialAbilities'> | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [mythologies, setMythologies] = useState<Mythology[]>([]);
-  const [races, setRaces] = useState<Race[]>([]);
-  const [gameClasses, setGameClasses] = useState<GameClass[]>([]);
-  const [attributes, setAttributes] = useState<GameAttribute[]>([]);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [gameData, setGameData] = useState<{
+      mythologies: Mythology[],
+      races: Race[],
+      gameClasses: GameClass[],
+      attributes: GameAttribute[]
+  } | null>(null);
 
   useEffect(() => {
     async function fetchGameData() {
@@ -70,10 +74,12 @@ export default function CharacterSheetPage() {
                 getCollection<GameClass>('classes'),
                 getCollection<GameAttribute>('attributes'),
             ]);
-            setMythologies(mythologiesData);
-            setRaces(racesData);
-            setGameClasses(classesData);
-            setAttributes(attributesData);
+            setGameData({
+                mythologies: mythologiesData,
+                races: racesData,
+                gameClasses: classesData,
+                attributes: attributesData
+            });
         } catch (error) {
             console.error("Failed to fetch game data for sheet:", error);
             toast({ title: "Erro ao carregar dados", description: "Não foi possível carregar os dados de jogo.", variant: "destructive"});
@@ -81,11 +87,98 @@ export default function CharacterSheetPage() {
     }
     fetchGameData();
   }, [toast]);
+  
+  useEffect(() => {
+    if (authLoading || !gameData || !user) return;
 
-  const saveCharacter = (char: Character) => {
-    localStorage.setItem('character', JSON.stringify(char));
-    setCharacter(char);
-  };
+    const needsGeneration = !character || !character.attributes || character.attributes.length === 0;
+
+    if (needsGeneration) {
+        const tempCharData = localStorage.getItem(`temp_char_${user.uid}`);
+        if(tempCharData) {
+            const parsedChar = JSON.parse(tempCharData);
+            generateNewSheet(parsedChar);
+        } else if (!isGenerating) {
+            router.push('/dashboard/character/create');
+        }
+    } else {
+        // Character exists, load sheet data from local storage
+        const backstory = localStorage.getItem(`char_backstory_${user.uid}`);
+        const equipment = localStorage.getItem(`char_equipment_${user.uid}`);
+        const abilities = localStorage.getItem(`char_abilities_${user.uid}`);
+        
+        if(backstory && equipment && abilities) {
+            setSheet({
+                backstory,
+                suggestedEquipment: JSON.parse(equipment),
+                initialAbilities: JSON.parse(abilities),
+            });
+        } else {
+            // Data is missing, regenerate
+             generateNewSheet(character);
+        }
+    }
+
+  }, [user, character, authLoading, gameData, router]);
+
+  const generateNewSheet = useCallback(async (baseChar: any) => {
+    if (!gameData || !user) return;
+    setIsGenerating(true);
+
+    const raceInfo = gameData.races.find(r => r.id === baseChar.race);
+    const classInfo = gameData.gameClasses.find(c => c.id === baseChar.gameClass);
+    const mythologyInfo = gameData.mythologies.find(m => m.id === baseChar.mythology);
+
+    if (raceInfo && classInfo && mythologyInfo) {
+        try {
+            const result = await generateCharacterSheet({
+                characterName: baseChar.name,
+                characterMythology: mythologyInfo.name,
+                characterRace: raceInfo.name,
+                characterClass: classInfo.name,
+                classStrengths: classInfo.strengths,
+                classWeaknesses: classInfo.weaknesses,
+                raceAttributeModifiers: raceInfo.attributeModifiers || [],
+                classAttributeModifiers: classInfo.attributeModifiers || [],
+                availableAttributes: gameData.attributes.map(a => a.name),
+            });
+
+            const defenseAttr = result.attributes.find(a => a.name.toLowerCase() === 'defesa')?.value || 0;
+            const baseHp = 100 + (defenseAttr / 2);
+
+            const newCharacter: Character = {
+              id: user.uid,
+              ...baseChar,
+              attributes: result.attributes,
+              level: 1,
+              xp: 0,
+              xpToNextLevel: 100,
+              attributePoints: 5,
+              maxHp: baseHp,
+              currentHp: baseHp,
+            };
+            
+            await saveCharacter(newCharacter);
+            setSheet(result);
+
+            localStorage.setItem(`char_backstory_${user.uid}`, result.backstory);
+            localStorage.setItem(`char_equipment_${user.uid}`, JSON.stringify(result.suggestedEquipment));
+            localStorage.setItem(`char_abilities_${user.uid}`, JSON.stringify(result.initialAbilities));
+            localStorage.removeItem(`temp_char_${user.uid}`);
+        } catch(e) {
+            console.error("Failed to generate character sheet", e);
+            toast({ title: "Erro de IA", description: "Não foi possível gerar a ficha do personagem. Tente novamente.", variant: 'destructive'})
+            router.push('/dashboard/character/create');
+        } finally {
+            setIsGenerating(false);
+        }
+    } else {
+        console.error("Could not find race or class info for the character.");
+        toast({ title: "Dados Inconsistentes", description: "Não foi possível encontrar informações da raça ou classe do seu personagem. Tente criar um novo.", variant: 'destructive' });
+        router.push('/dashboard/character/create');
+        setIsGenerating(false);
+      }
+  }, [gameData, user, saveCharacter, router, toast]);
 
   const handleLevelUp = useCallback(() => {
     if (!character) return;
@@ -106,7 +199,7 @@ export default function CharacterSheetPage() {
         title: "Você subiu de nível!",
         description: `Você alcançou o nível ${newLevel} e ganhou ${POINTS_PER_LEVEL} pontos de atributo!`,
     });
-  }, [character, toast]);
+  }, [character, toast, saveCharacter]);
 
   const handleGainXp = () => {
     if (!character) return;
@@ -121,100 +214,6 @@ export default function CharacterSheetPage() {
         toast({ title: `Você ganhou ${xpGained} XP!` });
     }
   }
-
-  useEffect(() => {
-    const charData = localStorage.getItem('character');
-    if (!charData) {
-      router.push('/dashboard/character/create');
-      return;
-    }
-
-    if (races.length === 0 || gameClasses.length === 0 || mythologies.length === 0 || attributes.length === 0) {
-        // Data not ready yet
-        return;
-    }
-    
-    const parsedChar: Character = JSON.parse(charData);
-    
-    const loadSheet = async () => {
-      // Check if the character already has attributes. If so, they have been generated.
-      if (parsedChar.attributes && parsedChar.attributes.length > 0) {
-        setCharacter(parsedChar);
-        const backstory = localStorage.getItem(`char_backstory_${parsedChar.id}`);
-        const equipment = localStorage.getItem(`char_equipment_${parsedChar.id}`);
-        const abilities = localStorage.getItem(`char_abilities_${parsedChar.id}`);
-        
-        if(backstory && equipment && abilities) {
-            setSheet({
-                backstory,
-                suggestedEquipment: JSON.parse(equipment),
-                initialAbilities: JSON.parse(abilities),
-            });
-            setLoading(false);
-            return;
-        }
-      }
-
-      // If not, generate the character sheet
-      const raceInfo = races.find(r => r.id === parsedChar.race);
-      const classInfo = gameClasses.find(c => c.id === parsedChar.gameClass);
-      const mythologyInfo = mythologies.find(m => m.id === parsedChar.mythology);
-
-      if (raceInfo && classInfo && mythologyInfo) {
-          try {
-            setLoading(true);
-            const result = await generateCharacterSheet({
-                characterName: parsedChar.name,
-                characterMythology: mythologyInfo.name,
-                characterRace: raceInfo.name,
-                characterClass: classInfo.name,
-                classStrengths: classInfo.strengths,
-                classWeaknesses: classInfo.weaknesses,
-                raceAttributeModifiers: raceInfo.attributeModifiers || [],
-                classAttributeModifiers: classInfo.attributeModifiers || [],
-                availableAttributes: attributes.map(a => a.name),
-            });
-
-            const defenseAttr = result.attributes.find(a => a.name.toLowerCase() === 'defesa')?.value || 0;
-            const baseHp = 100 + (defenseAttr / 2);
-
-            const newCharacter: Character = {
-              ...parsedChar,
-              attributes: result.attributes,
-              level: 1,
-              xp: 0,
-              xpToNextLevel: 100,
-              attributePoints: 5,
-              maxHp: baseHp,
-              currentHp: baseHp,
-            };
-            
-            saveCharacter(newCharacter);
-            setSheet(result);
-
-            // Save AI generated text to local storage to avoid re-generation
-            localStorage.setItem(`char_backstory_${newCharacter.id}`, result.backstory);
-            localStorage.setItem(`char_equipment_${newCharacter.id}`, JSON.stringify(result.suggestedEquipment));
-            localStorage.setItem(`char_abilities_${newCharacter.id}`, JSON.stringify(result.initialAbilities));
-          } catch(e) {
-            console.error("Failed to generate character sheet", e);
-            toast({ title: "Erro de IA", description: "Não foi possível gerar a ficha do personagem. Tente novamente.", variant: 'destructive'})
-            router.push('/dashboard/character/create');
-          } finally {
-            setLoading(false);
-          }
-      } else {
-        // This case can happen if data from Firestore is not aligned with char in localStorage
-        console.error("Could not find race or class info for the character.");
-        toast({ title: "Dados Inconsistentes", description: "Não foi possível encontrar informações da raça ou classe do seu personagem. Tente criar um novo.", variant: 'destructive' });
-        router.push('/dashboard/character/create');
-        setLoading(false);
-      }
-    }
-
-    loadSheet();
-  }, [router, toast, races, gameClasses, mythologies, attributes]);
-
 
   const handleAttributeIncrease = (attributeName: string) => {
     if (character && character.attributePoints > 0) {
@@ -231,7 +230,7 @@ export default function CharacterSheetPage() {
   };
 
 
-  if (loading || !character || !sheet || !races.length || !gameClasses.length) {
+  if (authLoading || isGenerating || !character || !sheet || !gameData) {
       return (
         <main className="p-4 sm:p-6 lg:p-8">
             <div className="container mx-auto max-w-4xl">
@@ -252,9 +251,9 @@ export default function CharacterSheetPage() {
       )
   }
   
-  const raceInfo = races.find(r => r.id === character.race);
-  const classInfo = gameClasses.find(c => c.id === character.gameClass);
-  const mythologyInfo = mythologies.find(m => m.id === character.mythology);
+  const raceInfo = gameData.races.find(r => r.id === character.race);
+  const classInfo = gameData.gameClasses.find(c => c.id === character.gameClass);
+  const mythologyInfo = gameData.mythologies.find(m => m.id === character.mythology);
   const avatar = PlaceHolderImages.find(p => p.id === `${raceInfo?.image}`);
 
   return (

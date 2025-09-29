@@ -16,6 +16,7 @@ import type { GameClass, Race, Character, Mythology } from '@/lib/game-data';
 import { getCollection } from '@/services/firestore';
 import { Sparkles } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useAuth } from '@/hooks/use-auth';
 
 const formSchema = z.object({
   name: z.string().min(2, 'O nome deve ter pelo menos 2 caracteres.').max(50, 'O nome deve ter no máximo 50 caracteres.'),
@@ -26,6 +27,7 @@ const formSchema = z.object({
 
 export default function CharacterCreationPage() {
   const router = useRouter();
+  const { user, saveCharacter } = useAuth();
   const [mythologies, setMythologies] = useState<Mythology[]>([]);
   const [gameClasses, setGameClasses] = useState<GameClass[]>([]);
   const [races, setRaces] = useState<Race[]>([]);
@@ -63,18 +65,31 @@ export default function CharacterCreationPage() {
   const availableRaces = races.filter(r => r.mythology === selectedMythology);
   const availableClasses = gameClasses.filter(gc => gc.mythology === selectedMythology);
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    const character: Omit<Character, 'level' | 'attributes' | 'xp' | 'xpToNextLevel' | 'attributePoints' | 'maxHp' | 'currentHp'> = {
-        id: `char-${Date.now()}`,
-        ...values,
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    if (!user) {
+        router.push('/login');
+        return;
     }
-    Object.keys(localStorage).forEach(key => {
-        if (key.startsWith('char_')) {
-            localStorage.removeItem(key);
-        }
-    });
 
-    localStorage.setItem('character', JSON.stringify(character));
+    // This is a partial character, the rest will be generated in the sheet page
+    const partialCharacter: Omit<Character, 'level' | 'attributes' | 'xp' | 'xpToNextLevel' | 'attributePoints' | 'maxHp' | 'currentHp' | 'id'> = {
+        name: values.name,
+        mythology: values.mythology,
+        race: values.race,
+        gameClass: values.gameClass,
+    };
+    
+    // Save this partial data to trigger the sheet generation
+    // The full character object will be constructed and saved in the sheet page
+    localStorage.setItem(`temp_char_${user.uid}`, JSON.stringify(partialCharacter));
+
+    // Clear any old AI generated data to ensure regeneration
+    localStorage.removeItem(`char_backstory_${user.uid}`);
+    localStorage.removeItem(`char_equipment_${user.uid}`);
+    localStorage.removeItem(`char_abilities_${user.uid}`);
+    
+    await saveCharacter({} as Character); // Save an empty object to trigger re-fetch in sheet page
+
     router.push('/dashboard/character/sheet');
   }
 
@@ -205,4 +220,3 @@ export default function CharacterCreationPage() {
     </main>
   );
 }
-

@@ -77,7 +77,7 @@ export type GameAttribute = {
 }
 
 export type Character = {
-  id: string;
+  id: string; // This will be the user's UID from Firebase Auth
   name: string;
   mythology: string;
   race: string;

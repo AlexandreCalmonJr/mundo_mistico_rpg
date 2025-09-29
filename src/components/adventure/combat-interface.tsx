@@ -11,6 +11,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Swords, Shield, Heart, Bot, User, Loader2, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { useAuth } from '@/hooks/use-auth';
 
 interface CombatInterfaceProps {
   enemy: Enemy;
@@ -24,7 +25,8 @@ type CombatLog = {
 
 export function CombatInterface({ enemy, onCombatEnd }: CombatInterfaceProps) {
   const { toast } = useToast();
-  const [player, setPlayer] = useState<Character | null>(null);
+  const { character: player, saveCharacter } = useAuth();
+  
   const [initialAbilities, setInitialAbilities] = useState<string[]>([]);
   const [currentEnemy, setCurrentEnemy] = useState<Enemy>(enemy);
   const [combatLog, setCombatLog] = useState<CombatLog[]>([]);
@@ -33,23 +35,14 @@ export function CombatInterface({ enemy, onCombatEnd }: CombatInterfaceProps) {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    const charData = localStorage.getItem('character');
-    if (charData) {
-      const parsedChar = JSON.parse(charData);
-      setPlayer(parsedChar);
-      
-      const abilitiesData = localStorage.getItem(`char_abilities_${parsedChar.id}`);
+    if (player) {
+      const abilitiesData = localStorage.getItem(`char_abilities_${player.id}`);
       if (abilitiesData) {
         setInitialAbilities(JSON.parse(abilitiesData));
       }
     }
-  }, []);
+  }, [player]);
 
-  const savePlayerState = (updatedPlayer: Character) => {
-    setPlayer(updatedPlayer);
-    localStorage.setItem('character', JSON.stringify(updatedPlayer));
-  };
-  
   const addLog = (message: string) => {
     setCombatLog(prev => [...prev, { turn, message }]);
   };
@@ -75,7 +68,7 @@ export function CombatInterface({ enemy, onCombatEnd }: CombatInterfaceProps) {
 
         setCurrentEnemy(e => ({ ...e, currentHp: newEnemyHp }));
         const updatedPlayer = { ...player, currentHp: newPlayerHp };
-        savePlayerState(updatedPlayer);
+        await saveCharacter(updatedPlayer);
 
         addLog(`IA: ${result.turnResultNarrative}`);
 
@@ -83,18 +76,17 @@ export function CombatInterface({ enemy, onCombatEnd }: CombatInterfaceProps) {
             addLog(`Você derrotou ${currentEnemy.name}!`);
             toast({ title: "Vitória!", description: `Você ganhou 50 XP!` });
             
-            // Grant XP - this is a simplified version
             const xpGained = 50;
             const finalPlayerState = {...updatedPlayer, xp: updatedPlayer.xp + xpGained};
-            savePlayerState(finalPlayerState);
+            await saveCharacter(finalPlayerState);
 
             setTimeout(() => onCombatEnd(true), 2000);
         } else if (newPlayerHp <= 0) {
             addLog(`Você foi derrotado por ${currentEnemy.name}...`);
             toast({ title: "Derrota...", variant: 'destructive' });
             
-            // Restore some HP
-            savePlayerState({...updatedPlayer, currentHp: Math.floor(updatedPlayer.maxHp / 4)});
+            const finalPlayerState = {...updatedPlayer, currentHp: Math.floor(updatedPlayer.maxHp / 4)};
+            await saveCharacter(finalPlayerState);
 
             setTimeout(() => onCombatEnd(false), 2000);
         }

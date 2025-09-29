@@ -13,19 +13,16 @@ import { Skeleton } from '@/components/ui/skeleton';
 import type { GameMap } from '@/lib/game-data';
 import { getCollection } from '@/services/firestore';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function AdventurePage() {
   const [selectedMap, setSelectedMap] = useState<GameMap | null>(null);
-  const [hasCharacter, setHasCharacter] = useState<boolean | null>(null);
+  const { character, loading: authLoading } = useAuth();
   const [gameMaps, setGameMaps] = useState<GameMap[]>([]);
   const [loadingMaps, setLoadingMaps] = useState(true);
-  const router = useRouter();
   const { toast } = useToast();
 
   useEffect(() => {
-      const charData = localStorage.getItem('character');
-      setHasCharacter(!!charData);
-      
       async function fetchMaps() {
         try {
           const mapsFromDb = await getCollection<GameMap>('gameMaps');
@@ -40,8 +37,23 @@ export default function AdventurePage() {
       fetchMaps();
 
   }, [toast]);
+  
+  const hasCharacter = character && character.attributes && character.attributes.length > 0;
 
-  if (hasCharacter === false) {
+  if (authLoading || loadingMaps) {
+    return (
+        <div className="p-4 sm:p-6 lg:p-8">
+            <Skeleton className="h-24 w-full" />
+            <div className="grid mt-8 gap-6 md:grid-cols-2 lg:grid-cols-3">
+              <Skeleton className="h-48 w-full" />
+              <Skeleton className="h-48 w-full" />
+              <Skeleton className="h-48 w-full" />
+            </div>
+        </div>
+    );
+  }
+
+  if (!hasCharacter) {
       return (
           <main className="p-4 sm:p-6 lg:p-8 flex items-center justify-center min-h-[calc(100vh-4rem)]">
               <Card className="w-full max-w-md text-center">
@@ -61,19 +73,6 @@ export default function AdventurePage() {
           </main>
       )
   }
-
-  if (hasCharacter === null || loadingMaps) {
-    return (
-        <div className="p-4 sm:p-6 lg:p-8">
-            <Skeleton className="h-24 w-full" />
-            <div className="grid mt-8 gap-6 md:grid-cols-2 lg:grid-cols-3">
-              <Skeleton className="h-48 w-full" />
-              <Skeleton className="h-48 w-full" />
-              <Skeleton className="h-48 w-full" />
-            </div>
-        </div>
-    );
-  }
   
   if (!selectedMap) {
     return <MapSelection gameMaps={gameMaps} onMapSelect={setSelectedMap} />;
@@ -81,5 +80,3 @@ export default function AdventurePage() {
 
   return <ChatInterface gameMap={selectedMap} />;
 }
-
-    

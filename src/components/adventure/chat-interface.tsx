@@ -11,6 +11,7 @@ import { CombatInterface } from './combat-interface';
 import type { Character, Enemy } from '@/lib/game-data';
 import { enemies } from '@/lib/game-data';
 import { getCollection } from '@/services/firestore';
+import { useAuth } from '@/hooks/use-auth';
 
 interface ChatInterfaceProps {
   gameMap: GameMap;
@@ -27,6 +28,7 @@ type CombatState = {
 }
 
 export function ChatInterface({ gameMap }: ChatInterfaceProps) {
+  const { character } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -55,15 +57,13 @@ export function ChatInterface({ gameMap }: ChatInterfaceProps) {
   }, []);
 
    useEffect(() => {
-    if (races.length === 0 || gameClasses.length === 0) return;
+    if (races.length === 0 || gameClasses.length === 0 || !character) return;
 
-    const charData = localStorage.getItem('character');
     let details = 'Aventureiro desconhecido';
-    if (charData) {
-      const parsedChar: Character = JSON.parse(charData);
-      const race = races.find(r => r.id === parsedChar.race)?.name || 'Raça desconhecida';
-      const gameClass = gameClasses.find(c => c.id === parsedChar.gameClass)?.name || 'Classe desconhecida';
-      details = `${parsedChar.name}, o ${race} ${gameClass}, Nível ${parsedChar.level}`;
+    if (character) {
+      const race = races.find(r => r.id === character.race)?.name || 'Raça desconhecida';
+      const gameClass = gameClasses.find(c => c.id === character.gameClass)?.name || 'Classe desconhecida';
+      details = `${character.name}, o ${race} ${gameClass}, Nível ${character.level}`;
     }
     setCharacterDetails(details);
 
@@ -85,7 +85,7 @@ export function ChatInterface({ gameMap }: ChatInterfaceProps) {
       }
     };
     startAdventure();
-  }, [gameMap, races, gameClasses]);
+  }, [gameMap, races, gameClasses, character]);
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -121,7 +121,7 @@ export function ChatInterface({ gameMap }: ChatInterfaceProps) {
 
     const newMessages: Message[] = [...messages, { role: 'user', content: input }];
     setMessages(newMessages);
-    setInput('');
+setInput('');
     setIsLoading(true);
 
     try {
@@ -225,5 +225,3 @@ export function ChatInterface({ gameMap }: ChatInterfaceProps) {
     </main>
   );
 }
-
-    
