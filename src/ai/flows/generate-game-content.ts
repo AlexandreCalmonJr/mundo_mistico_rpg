@@ -17,10 +17,13 @@ const GenerateGameContentInputSchema = z.object({
 });
 export type GenerateGameContentInput = z.infer<typeof GenerateGameContentInputSchema>;
 
+const GeneratedJsonSchema = z.string().describe('The generated game content as a JSON string.');
+
 const GenerateGameContentOutputSchema = z.object({
-  generatedJson: z.string().describe('The generated game content as a JSON string.'),
+  generatedJson: GeneratedJsonSchema,
 });
 export type GenerateGameContentOutput = z.infer<typeof GenerateGameContentOutputSchema>;
+
 
 export async function generateGameContent(
   input: GenerateGameContentInput
@@ -138,6 +141,17 @@ const generateGameContentFlow = ai.defineFlow(
   },
   async (input) => {
     const { output } = await prompt(input);
-    return output!;
+    if (!output) {
+      throw new Error("A IA não conseguiu gerar o conteúdo.");
+    }
+    // Attempt to parse the JSON to ensure it's valid before returning.
+    // This can help catch malformed JSON from the LLM.
+    try {
+      JSON.parse(output.generatedJson);
+    } catch (e) {
+      console.error("A IA retornou um JSON inválido:", output.generatedJson);
+      throw new Error("A resposta da IA não era um JSON válido.");
+    }
+    return output;
   }
 );
