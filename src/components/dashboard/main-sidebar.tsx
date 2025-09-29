@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -14,13 +15,14 @@ import {
 } from '@/components/ui/sidebar';
 import { Logo } from '@/components/icons/logo';
 import { Button } from '../ui/button';
-import { LayoutDashboard, Swords, UserPlus, BrainCircuit, LogOut, BookUser } from 'lucide-react';
+import { LayoutDashboard, Swords, UserPlus, BrainCircuit, LogOut, BookUser, Users } from 'lucide-react';
 
 const menuItems = [
   { href: '/dashboard', label: 'Painel', icon: LayoutDashboard },
   { href: '/dashboard/character/sheet', label: 'Meu Personagem', icon: BookUser },
   { href: '/dashboard/character/create', label: 'Criar Personagem', icon: UserPlus },
   { href: '/dashboard/classes', label: 'Classes e Raças', icon: Swords },
+  { href: '/dashboard/clans', label: 'Clãs', icon: Users },
   { href: '/dashboard/adventure', label: 'Aventura', icon: BrainCircuit },
 ];
 

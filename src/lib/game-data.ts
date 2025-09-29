@@ -36,6 +36,13 @@ export type ClassGroup = {
   levelRequirement: number;
 }
 
+export type Clan = {
+  id: string;
+  name: string;
+  description: string;
+  members: string[];
+}
+
 export const gameClasses: GameClass[] = [
   {
     id: 'warrior',
@@ -137,3 +144,24 @@ export const classGroups: ClassGroup[] = [
     levelRequirement: 10,
   }
 ]
+
+export const clans: Clan[] = [
+  {
+    id: 'clan-1',
+    name: 'Guardiões de Aço',
+    description: 'Um clã de guerreiros honrados que protegem os fracos.',
+    members: ['Jogador1', 'Admin', 'HeróiAnônimo'],
+  },
+  {
+    id: 'clan-2',
+    name: 'Círculo Arcano',
+    description: 'Mestres das artes místicas em busca de conhecimento proibido.',
+    members: ['FeiticeiroSupremo', 'MagaEstelar'],
+  },
+  {
+    id: 'clan-3',
+    name: 'Flechas Sombrias',
+    description: 'Rastreadores e assassinos que operam nas sombras.',
+    members: ['ArqueiraFantasma', 'SombraSilenciosa', 'CaçadorNoturno'],
+  }
+];
