@@ -4,8 +4,8 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, Edit, Trash2 } from 'lucide-react';
-import { gameClasses as initialClasses, races as initialRaces, temples as initialTemples, classGroups as initialClassGroups, clans as initialClans, mythologies } from '@/lib/game-data';
-import type { GameClass, Race, Temple, Character, ClassGroup, Clan, AttributeModifier } from '@/lib/game-data';
+import { gameClasses as initialClasses, races as initialRaces, temples as initialTemples, classGroups as initialClassGroups, clans as initialClans, mythologies, abilities as initialAbilities } from '@/lib/game-data';
+import type { GameClass, Race, Temple, Character, ClassGroup, Clan, AttributeModifier, Ability } from '@/lib/game-data';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DataTable } from '@/components/admin/data-table';
@@ -14,6 +14,7 @@ import { RaceForm } from '@/components/admin/forms/race-form';
 import { TempleForm } from '@/components/admin/forms/temple-form';
 import { ClassGroupForm } from '@/components/admin/forms/class-group-form';
 import { ClanForm } from '@/components/admin/forms/clan-form';
+import { AbilityForm } from '@/components/admin/forms/ability-form';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,12 +34,12 @@ const initialUsers: any[] = [
     { id: 'user-3', name: 'Jogador2', email: 'jogador2@email.com', role: 'Player' },
 ];
 
-type DataType = 'class' | 'race' | 'temple' | 'user' | 'class-group' | 'clan';
+type DataType = 'class' | 'race' | 'temple' | 'user' | 'class-group' | 'clan' | 'ability';
 type DialogState = {
   isOpen: boolean;
   mode: 'add' | 'edit';
   type: DataType | null;
-  data: GameClass | Race | Temple | ClassGroup | Clan | any | null;
+  data: GameClass | Race | Temple | ClassGroup | Clan | Ability | any | null;
 }
 
 const formatModifiers = (modifiers: AttributeModifier[]) => {
@@ -53,12 +54,13 @@ export default function AdminPage() {
   const [users, setUsers] = useState<any[]>(initialUsers);
   const [classGroups, setClassGroups] = useState<ClassGroup[]>(initialClassGroups);
   const [clans, setClans] = useState<Clan[]>(initialClans);
+  const [abilities, setAbilities] = useState<Ability[]>(initialAbilities);
   
   const [dialogState, setDialogState] = useState<DialogState>({ isOpen: false, mode: 'add', type: null, data: null });
   const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean, type: DataType | null, id: string | null }>({ isOpen: false, type: null, id: null });
 
 
-  const handleOpenDialog = (mode: 'add' | 'edit', type: DataType, data: GameClass | Race | Temple | ClassGroup | Clan | null = null) => {
+  const handleOpenDialog = (mode: 'add' | 'edit', type: DataType, data: GameClass | Race | Temple | ClassGroup | Clan | Ability | null = null) => {
     setDialogState({ isOpen: true, mode, type, data });
   };
   
@@ -91,6 +93,9 @@ export default function AdminPage() {
         break;
       case 'clan':
         setClans(prev => prev.filter(item => item.id !== deleteConfirm.id));
+        break;
+      case 'ability':
+        setAbilities(prev => prev.filter(item => item.id !== deleteConfirm.id));
         break;
     }
     setDeleteConfirm({ isOpen: false, type: null, id: null });
@@ -142,6 +147,13 @@ export default function AdminPage() {
             setClans(prev => prev.map(item => item.id === id ? data : item));
         }
         break;
+       case 'ability':
+        if (dialogState.mode === 'add') {
+            setAbilities(prev => [...prev, { ...data, id: `ability-${Date.now()}` }]);
+        } else {
+            setAbilities(prev => prev.map(item => item.id === id ? data : item));
+        }
+        break;
     }
     handleCloseDialog();
   };
@@ -162,6 +174,7 @@ export default function AdminPage() {
       case 'temple': return <TempleForm {...props} />;
       case 'class-group': return <ClassGroupForm {...props} gameClasses={gameClasses} />;
       case 'clan': return <ClanForm {...props} />;
+      case 'ability': return <AbilityForm {...props} gameClasses={gameClasses}/>;
       // case 'user': return <UserForm {...props} />;
       default: return null;
     }
@@ -294,6 +307,28 @@ export default function AdminPage() {
       ),
     },
   ];
+  
+  const abilityColumns = [
+    { accessorKey: 'name', header: 'Nome' },
+    { accessorKey: 'description', header: 'Descrição' },
+    { accessorKey: 'type', header: 'Tipo' },
+    { accessorKey: 'cost', header: 'Custo' },
+    { accessorKey: 'levelRequirement', header: 'Nível Mín.' },
+    { accessorKey: 'classId', header: 'Classe', cell: ({row}: any) => gameClasses.find(c => c.id === row.original.classId)?.name || 'Qualquer' },
+    {
+      id: 'actions',
+      cell: ({ row }: { row: { original: any } }) => (
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => handleOpenDialog('edit', 'ability', row.original)}>
+            <Edit className="h-4 w-4" />
+          </Button>
+          <Button variant="destructive" size="sm" onClick={() => handleDelete('ability', row.original.id)}>
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      ),
+    },
+  ];
 
 
   return (
@@ -306,6 +341,7 @@ export default function AdminPage() {
           <TabsList className="mb-4">
             <TabsTrigger value="classes">Classes</TabsTrigger>
             <TabsTrigger value="races">Raças</TabsTrigger>
+            <TabsTrigger value="abilities">Habilidades</TabsTrigger>
             <TabsTrigger value="temples">Templos</TabsTrigger>
             <TabsTrigger value="class-groups">Grupos de Classes</TabsTrigger>
             <TabsTrigger value="clans">Clãs</TabsTrigger>
@@ -328,6 +364,15 @@ export default function AdminPage() {
               </Button>
             </div>
             <DataTable columns={raceColumns} data={races} />
+          </TabsContent>
+
+           <TabsContent value="abilities">
+            <div className="flex justify-end mb-4">
+              <Button onClick={() => handleOpenDialog('add', 'ability')}>
+                <PlusCircle className="mr-2 h-4 w-4" /> Adicionar Habilidade
+              </Button>
+            </div>
+            <DataTable columns={abilityColumns} data={abilities} />
           </TabsContent>
 
           <TabsContent value="temples">

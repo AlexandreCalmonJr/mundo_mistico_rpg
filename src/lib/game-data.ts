@@ -9,6 +9,16 @@ export type AttributeModifier = {
     modifier: number;
 }
 
+export type Ability = {
+  id: string;
+  name: string;
+  description: string;
+  type: 'Ataque' | 'Defesa' | 'Suporte' | 'Utilidade';
+  cost: number;
+  levelRequirement: number;
+  classId: string; // ID da classe que pode usar a habilidade
+}
+
 export type GameClass = {
   id: string;
   name: string;
@@ -130,6 +140,7 @@ export const gameClasses: GameClass[] = [
         { attribute: 'Inteligência', modifier: 20 },
         { attribute: 'Defesa', modifier: -5 },
         { attribute: 'Agilidade', modifier: -5 },
+        { attribute: 'Força', modifier: -10 },
     ]
   },
   // Egyptian
@@ -191,6 +202,7 @@ export const gameClasses: GameClass[] = [
         { attribute: 'Inteligência', modifier: 15 },
         { attribute: 'Agilidade', modifier: 5 },
         { attribute: 'Defesa', modifier: -5 },
+        { attribute: 'Força', modifier: -5 },
     ]
   },
   // Aztec
@@ -206,6 +218,7 @@ export const gameClasses: GameClass[] = [
         { attribute: 'Agilidade', modifier: 15 },
         { attribute: 'Força', modifier: 10 },
         { attribute: 'Defesa', modifier: -5 },
+        { attribute: 'Inteligência', modifier: -10 },
     ]
   },
   {
@@ -219,7 +232,7 @@ export const gameClasses: GameClass[] = [
     attributeModifiers: [
         { attribute: 'Inteligência', modifier: 10 },
         { attribute: 'Força', modifier: 5 },
-        { attribute: 'Defesa', modifier: -5 },
+        { attribute: 'Defesa', modifier: 5 },
         { attribute: 'Agilidade', modifier: -5 },
     ]
   },
@@ -262,6 +275,7 @@ export const races: Race[] = [
             { attribute: 'Força', modifier: 5 },
             { attribute: 'Agilidade', modifier: 5 },
             { attribute: 'Defesa', modifier: 5 },
+            { attribute: 'Inteligência', modifier: 5 },
         ]
     },
     {
@@ -274,6 +288,7 @@ export const races: Race[] = [
             { attribute: 'Agilidade', modifier: 5 },
             { attribute: 'Inteligência', modifier: 10 },
             { attribute: 'Força', modifier: -5 },
+            { attribute: 'Defesa', modifier: -5 },
         ]
     },
     // Egyptian
@@ -299,6 +314,7 @@ export const races: Race[] = [
             { attribute: 'Defesa', modifier: 15 },
             { attribute: 'Agilidade', modifier: -10 },
             { attribute: 'Inteligência', modifier: -5 },
+            { attribute: 'Força', modifier: 5 },
         ]
     },
     // Japanese
@@ -428,3 +444,33 @@ export const clans: Clan[] = [
     members: ['ArqueiraFantasma', 'SombraSilenciosa', 'CaçadorNoturno'],
   }
 ];
+
+export const abilities: Ability[] = [
+  {
+    id: 'ability-1',
+    name: 'Golpe Poderoso',
+    description: 'Um ataque corpo a corpo devastador que causa dano massivo.',
+    type: 'Ataque',
+    cost: 10,
+    levelRequirement: 1,
+    classId: 'berserker'
+  },
+  {
+    id: 'ability-2',
+    name: 'Muralha de Escudos',
+    description: 'Aumenta a defesa de todos os aliados próximos por um curto período.',
+    type: 'Defesa',
+    cost: 20,
+    levelRequirement: 5,
+    classId: 'hoplite'
+  },
+  {
+    id: 'ability-3',
+    name: 'Bênção de Rá',
+    description: 'Cura um aliado e concede um bônus de dano de fogo.',
+    type: 'Suporte',
+    cost: 15,
+    levelRequirement: 3,
+    classId: 'priest-of-ra'
+  }
+]
