@@ -5,8 +5,9 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Sparkles, Copy } from 'lucide-react';
+import { Loader2, Sparkles, Copy, Upload } from 'lucide-react';
 import { generateGameContent } from '@/ai/flows/generate-game-content';
+import { addDocument } from '@/services/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent } from '@/components/ui/card';
 
@@ -24,6 +25,7 @@ export function ContentGenerator() {
   const [contentType, setContentType] = useState('');
   const [prompt, setPrompt] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
   const [generatedContent, setGeneratedContent] = useState('');
 
   const handleGenerate = async () => {
@@ -56,6 +58,44 @@ export function ContentGenerator() {
     navigator.clipboard.writeText(generatedContent);
     toast({ title: 'Conteúdo copiado para a área de transferência!' });
   };
+  
+  const handleImport = async () => {
+    setIsImporting(true);
+    try {
+      const data = JSON.parse(generatedContent);
+      let collectionName = '';
+
+      switch (contentType) {
+        case 'Classe': collectionName = 'classes'; break;
+        case 'Raça': collectionName = 'races'; break;
+        case 'Habilidade': collectionName = 'abilities'; break;
+        case 'Arma': collectionName = 'weapons'; break;
+        case 'Mapa': collectionName = 'gameMaps'; break;
+        case 'Grupo de Classe': collectionName = 'classGroups'; break;
+        default:
+          throw new Error('Tipo de conteúdo inválido para importação.');
+      }
+      
+      await addDocument(collectionName, data);
+      
+      toast({
+        title: 'Conteúdo importado com sucesso!',
+        description: `Novo(a) ${contentType} adicionado(a) ao banco de dados. Recarregue a página para ver a atualização na tabela.`,
+      });
+      setGeneratedContent('');
+
+    } catch (error) {
+      console.error('Failed to import content:', error);
+      toast({
+        title: 'Erro ao importar',
+        description: 'Não foi possível salvar o conteúdo no banco de dados. Verifique o formato do JSON.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsImporting(false);
+    }
+  };
+
 
   return (
     <div className="space-y-4">
@@ -80,7 +120,7 @@ export function ContentGenerator() {
         </div>
       </div>
       
-      <Button onClick={handleGenerate} disabled={isLoading} className="w-full">
+      <Button onClick={handleGenerate} disabled={isLoading || isImporting} className="w-full">
         {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
         Gerar
       </Button>
@@ -93,15 +133,20 @@ export function ContentGenerator() {
                     <pre className="text-sm text-primary-foreground whitespace-pre-wrap overflow-x-auto">
                     <code>{generatedContent}</code>
                     </pre>
-                     <Button variant="ghost" size="icon" className="absolute top-2 right-2" onClick={handleCopy}>
-                        <Copy className="h-4 w-4" />
-                    </Button>
                 </CardContent>
             </Card>
+            <div className="flex gap-2">
+                 <Button variant="outline" className="w-full" onClick={handleCopy}>
+                    <Copy className="h-4 w-4 mr-2" />
+                    Copiar JSON
+                </Button>
+                <Button className="w-full" onClick={handleImport} disabled={isImporting}>
+                    {isImporting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
+                    Importar para o Banco de Dados
+                </Button>
+            </div>
         </div>
       )}
     </div>
   );
 }
-
-    
