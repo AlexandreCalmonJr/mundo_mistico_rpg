@@ -2,21 +2,32 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Logo } from '@/components/icons/logo';
+import { useToast } from '@/hooks/use-toast';
 
 export default function LoginPage() {
   const router = useRouter();
+  const { toast } = useToast();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, you'd handle authentication here.
-    // For this demo, we'll just redirect to the dashboard.
-    router.push('/dashboard');
+    if (email === 'admin' && password === 'admin123') {
+      router.push('/dashboard');
+    } else {
+      toast({
+        title: 'Credenciais inválidas',
+        description: 'Por favor, verifique seu e-mail e senha.',
+        variant: 'destructive',
+      });
+    }
   };
 
   return (
@@ -34,7 +45,7 @@ export default function LoginPage() {
             <form onSubmit={handleLogin} className="grid gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="heroi@email.com" required />
+                <Input id="email" type="email" placeholder="heroi@email.com" required value={email} onChange={(e) => setEmail(e.target.value)} />
               </div>
               <div className="grid gap-2">
                 <div className="flex items-center">
@@ -43,7 +54,7 @@ export default function LoginPage() {
                     Esqueceu sua senha?
                   </Link>
                 </div>
-                <Input id="password" type="password" required />
+                <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
               </div>
               <Button type="submit" className="w-full">
                 Entrar
