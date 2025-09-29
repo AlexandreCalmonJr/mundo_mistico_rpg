@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent } from '@/components/ui/card';
 
 const CONTENT_TYPES = [
+  { value: 'Mitologia', label: 'Mitologia' },
   { value: 'Classe', label: 'Classe' },
   { value: 'Raça', label: 'Raça' },
   { value: 'Habilidade', label: 'Habilidade' },
@@ -81,6 +82,7 @@ export function ContentGenerator() {
       } else { // Handle single document import
         let collectionName = '';
         switch (contentType) {
+            case 'Mitologia': collectionName = 'mythologies'; break;
             case 'Classe': collectionName = 'classes'; break;
             case 'Raça': collectionName = 'races'; break;
             case 'Habilidade': collectionName = 'abilities'; break;
@@ -167,3 +169,4 @@ export function ContentGenerator() {
     </div>
   );
 }
+

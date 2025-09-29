@@ -1,3 +1,4 @@
+
 export type Attribute = {
   name: string;
   value: number;
@@ -35,6 +36,11 @@ export type Enemy = {
   currentHp: number;
   attack: number;
   defense: number;
+}
+
+export type Mythology = {
+    id: string;
+    name: string;
 }
 
 export type GameClass = {
@@ -92,22 +98,6 @@ export type Clan = {
   members: string[];
 }
 
-export const mythologies = [
-    { id: 'Norse', name: 'Nórdica' },
-    { id: 'Greek', name: 'Grega' },
-    { id: 'Egyptian', name: 'Egípcia' },
-    { id: 'Japanese', name: 'Japonesa' },
-    { id: 'Aztec', name: 'Asteca' },
-];
-
-export const gameClasses: GameClass[] = [];
-export const races: Race[] = [];
-export const gameMaps: GameMap[] = [];
-export const classGroups: ClassGroup[] = [];
-export const clans: Clan[] = [];
-export const abilities: Ability[] = [];
-export const weapons: Weapon[] = [];
-
 export const enemies: Enemy[] = [
     {
         id: 'goblin',
@@ -134,3 +124,4 @@ export const enemies: Enemy[] = [
         defense: 30,
     }
 ];
+

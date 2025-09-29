@@ -12,8 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { mythologies } from '@/lib/game-data';
-import type { GameClass, Race, Character } from '@/lib/game-data';
+import type { GameClass, Race, Character, Mythology } from '@/lib/game-data';
 import { getCollection } from '@/services/firestore';
 import { Sparkles } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -27,6 +26,7 @@ const formSchema = z.object({
 
 export default function CharacterCreationPage() {
   const router = useRouter();
+  const [mythologies, setMythologies] = useState<Mythology[]>([]);
   const [gameClasses, setGameClasses] = useState<GameClass[]>([]);
   const [races, setRaces] = useState<Race[]>([]);
   const [loading, setLoading] = useState(true);
@@ -41,10 +41,12 @@ export default function CharacterCreationPage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const [classesData, racesData] = await Promise.all([
+        const [mythologiesData, classesData, racesData] = await Promise.all([
+          getCollection<Mythology>('mythologies'),
           getCollection<GameClass>('classes'),
           getCollection<Race>('races'),
         ]);
+        setMythologies(mythologiesData);
         setGameClasses(classesData);
         setRaces(racesData);
       } catch (error) {
@@ -203,3 +205,4 @@ export default function CharacterCreationPage() {
     </main>
   );
 }
+

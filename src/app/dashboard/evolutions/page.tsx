@@ -3,14 +3,14 @@
 
 import { useState, useEffect } from 'react';
 import { getCollection } from '@/services/firestore';
-import type { GameClass, ClassGroup, Ability, Race } from '@/lib/game-data';
-import { mythologies, races as staticRaces } from '@/lib/game-data';
+import type { GameClass, ClassGroup, Ability, Mythology } from '@/lib/game-data';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
 import { ArrowRight, GitMerge, Shield, Star, Swords } from 'lucide-react';
 
 export default function EvolutionsPage() {
+    const [mythologies, setMythologies] = useState<Mythology[]>([]);
     const [gameClasses, setGameClasses] = useState<GameClass[]>([]);
     const [classGroups, setClassGroups] = useState<ClassGroup[]>([]);
     const [abilities, setAbilities] = useState<Ability[]>([]);
@@ -19,11 +19,13 @@ export default function EvolutionsPage() {
     useEffect(() => {
         async function fetchData() {
             try {
-                const [classesData, groupsData, abilitiesData] = await Promise.all([
+                const [mythologiesData, classesData, groupsData, abilitiesData] = await Promise.all([
+                    getCollection<Mythology>('mythologies'),
                     getCollection<GameClass>('classes'),
                     getCollection<ClassGroup>('classGroups'),
                     getCollection<Ability>('abilities'),
                 ]);
+                setMythologies(mythologiesData);
                 setGameClasses(classesData);
                 setClassGroups(groupsData);
                 setAbilities(abilitiesData);
@@ -119,3 +121,4 @@ export default function EvolutionsPage() {
         </main>
     )
 }
+

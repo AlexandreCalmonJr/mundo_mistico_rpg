@@ -4,8 +4,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, Edit, Trash2, Sparkles } from 'lucide-react';
-import { mythologies } from '@/lib/game-data';
-import type { GameClass, Race, GameMap, Character, ClassGroup, Clan, AttributeModifier, Ability, Weapon } from '@/lib/game-data';
+import type { Mythology, GameClass, Race, GameMap, Character, ClassGroup, Clan, AttributeModifier, Ability, Weapon } from '@/lib/game-data';
 import { getCollection, addDocument, updateDocument, deleteDocument } from '@/services/firestore';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -17,6 +16,7 @@ import { ClassGroupForm } from '@/components/admin/forms/class-group-form';
 import { ClanForm } from '@/components/admin/forms/clan-form';
 import { AbilityForm } from '@/components/admin/forms/ability-form';
 import { WeaponForm } from '@/components/admin/forms/weapon-form';
+import { MythologyForm } from '@/components/admin/forms/mythology-form';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -39,12 +39,12 @@ const initialUsers: any[] = [
     { id: 'user-3', name: 'Jogador2', email: 'jogador2@email.com', role: 'Player' },
 ];
 
-type DataType = 'class' | 'race' | 'map' | 'user' | 'class-group' | 'clan' | 'ability' | 'weapon';
+type DataType = 'class' | 'race' | 'map' | 'user' | 'class-group' | 'clan' | 'ability' | 'weapon' | 'mythology';
 type DialogState = {
   isOpen: boolean;
   mode: 'add' | 'edit';
   type: DataType | null;
-  data: GameClass | Race | GameMap | ClassGroup | Clan | Ability | Weapon | any | null;
+  data: GameClass | Race | GameMap | ClassGroup | Clan | Ability | Weapon | Mythology | any | null;
 }
 
 const formatModifiers = (modifiers: AttributeModifier[]) => {
@@ -54,6 +54,7 @@ const formatModifiers = (modifiers: AttributeModifier[]) => {
 
 export default function AdminPage() {
   const { toast } = useToast();
+  const [mythologies, setMythologies] = useState<Mythology[]>([]);
   const [gameClasses, setGameClasses] = useState<GameClass[]>([]);
   const [races, setRaces] = useState<Race[]>([]);
   const [gameMaps, setGameMaps] = useState<GameMap[]>([]);
@@ -72,6 +73,7 @@ export default function AdminPage() {
       try {
         setLoading(true);
         const [
+            mythologiesFromDb,
             classesFromDb, 
             racesFromDb,
             mapsFromDb,
@@ -80,6 +82,7 @@ export default function AdminPage() {
             weaponsFromDb, 
             clansFromDb
         ] = await Promise.all([
+          getCollection<Mythology>('mythologies'),
           getCollection<GameClass>('classes'),
           getCollection<Race>('races'),
           getCollection<GameMap>('gameMaps'),
@@ -88,6 +91,7 @@ export default function AdminPage() {
           getCollection<Weapon>('weapons'),
           getCollection<Clan>('clans'),
         ]);
+        setMythologies(mythologiesFromDb);
         setGameClasses(classesFromDb);
         setRaces(racesFromDb);
         setGameMaps(mapsFromDb);
@@ -110,7 +114,7 @@ export default function AdminPage() {
   }, [toast]);
 
 
-  const handleOpenDialog = (mode: 'add' | 'edit', type: DataType, data: GameClass | Race | GameMap | ClassGroup | Clan | Ability | Weapon | null = null) => {
+  const handleOpenDialog = (mode: 'add' | 'edit', type: DataType, data: GameClass | Race | GameMap | ClassGroup | Clan | Ability | Weapon | Mythology | null = null) => {
     setDialogState({ isOpen: true, mode, type, data });
   };
   
@@ -128,6 +132,7 @@ export default function AdminPage() {
     try {
       let collectionName: string = '';
       switch (deleteConfirm.type) {
+        case 'mythology': collectionName = 'mythologies'; break;
         case 'class': collectionName = 'classes'; break;
         case 'race': collectionName = 'races'; break;
         case 'map': collectionName = 'gameMaps'; break;
@@ -148,6 +153,7 @@ export default function AdminPage() {
       await deleteDocument(collectionName, deleteConfirm.id);
       
       switch (deleteConfirm.type) {
+         case 'mythology': setMythologies(prev => prev.filter(item => item.id !== deleteConfirm.id)); break;
          case 'class': setGameClasses(prev => prev.filter(item => item.id !== deleteConfirm.id)); break;
          case 'race': setRaces(prev => prev.filter(item => item.id !== deleteConfirm.id)); break;
          case 'map': setGameMaps(prev => prev.filter(item => item.id !== deleteConfirm.id)); break;
@@ -174,6 +180,8 @@ export default function AdminPage() {
         let successMsg = '';
 
         switch (type) {
+            case 'mythology':
+                collectionName = 'mythologies'; setData = setMythologies; successMsg = 'Mitologia'; break;
             case 'class':
                 collectionName = 'classes'; setData = setGameClasses; successMsg = 'Classe'; break;
             case 'race':
@@ -232,8 +240,9 @@ export default function AdminPage() {
     };
 
     switch (dialogState.type) {
-      case 'class': return <ClassForm {...props} />;
-      case 'race': return <RaceForm {...props} />;
+      case 'mythology': return <MythologyForm {...props} />;
+      case 'class': return <ClassForm {...props} mythologies={mythologies} />;
+      case 'race': return <RaceForm {...props} mythologies={mythologies} />;
       case 'map': return <MapForm {...props} />;
       case 'class-group': return <ClassGroupForm {...props} gameClasses={gameClasses} />;
       case 'clan': return <ClanForm {...props} />;
@@ -244,6 +253,24 @@ export default function AdminPage() {
     }
   }
   
+  const mythologyColumns = [
+    { accessorKey: 'name', header: 'Nome' },
+    { accessorKey: 'id', header: 'ID' },
+    {
+      id: 'actions',
+      cell: ({ row }: { row: { original: any } }) => (
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => handleOpenDialog('edit', 'mythology', row.original)}>
+            <Edit className="h-4 w-4" />
+          </Button>
+          <Button variant="destructive" size="sm" onClick={() => handleDelete('mythology', row.original.id)}>
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      ),
+    },
+  ];
+
   const classColumns = [
     { accessorKey: 'name', header: 'Nome' },
     { accessorKey: 'mythology', header: 'Mitologia', cell: ({row}: any) => mythologies.find(m => m.id === row.original.mythology)?.name || 'N/A' },
@@ -452,6 +479,7 @@ export default function AdminPage() {
 
         <Tabs defaultValue="classes">
           <TabsList className="mb-4">
+            <TabsTrigger value="mythologies">Mitologias</TabsTrigger>
             <TabsTrigger value="classes">Classes</TabsTrigger>
             <TabsTrigger value="races">Raças</TabsTrigger>
             <TabsTrigger value="abilities">Habilidades</TabsTrigger>
@@ -461,6 +489,15 @@ export default function AdminPage() {
             <TabsTrigger value="clans">Clãs</TabsTrigger>
             <TabsTrigger value="users">Usuários</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="mythologies">
+            <div className="flex justify-end mb-4">
+              <Button onClick={() => handleOpenDialog('add', 'mythology')}>
+                <PlusCircle className="mr-2 h-4 w-4" /> Adicionar Mitologia
+              </Button>
+            </div>
+            <DataTable columns={mythologyColumns} data={mythologies} />
+          </TabsContent>
 
           <TabsContent value="classes">
             <div className="flex justify-end mb-4">
@@ -556,3 +593,4 @@ export default function AdminPage() {
     </main>
   );
 }
+

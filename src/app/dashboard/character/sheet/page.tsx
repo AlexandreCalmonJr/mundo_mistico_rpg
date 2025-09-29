@@ -4,8 +4,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { mythologies } from '@/lib/game-data';
-import type { Character, Attribute, Race, GameClass } from '@/lib/game-data';
+import type { Character, Attribute, Race, GameClass, Mythology } from '@/lib/game-data';
 import { generateCharacterSheet, GenerateCharacterSheetOutput } from '@/ai/flows/generate-character-sheet';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { getCollection } from '@/services/firestore';
@@ -57,16 +56,19 @@ export default function CharacterSheetPage() {
   const [character, setCharacter] = useState<Character | null>(null);
   const [sheet, setSheet] = useState<Pick<GenerateCharacterSheetOutput, 'backstory' | 'suggestedEquipment' | 'initialAbilities'> | null>(null);
   const [loading, setLoading] = useState(true);
+  const [mythologies, setMythologies] = useState<Mythology[]>([]);
   const [races, setRaces] = useState<Race[]>([]);
   const [gameClasses, setGameClasses] = useState<GameClass[]>([]);
 
   useEffect(() => {
     async function fetchGameData() {
         try {
-            const [racesData, classesData] = await Promise.all([
+            const [mythologiesData, racesData, classesData] = await Promise.all([
+                getCollection<Mythology>('mythologies'),
                 getCollection<Race>('races'),
                 getCollection<GameClass>('classes'),
             ]);
+            setMythologies(mythologiesData);
             setRaces(racesData);
             setGameClasses(classesData);
         } catch (error) {
@@ -124,7 +126,7 @@ export default function CharacterSheetPage() {
       return;
     }
 
-    if (races.length === 0 || gameClasses.length === 0) {
+    if (races.length === 0 || gameClasses.length === 0 || mythologies.length === 0) {
         // Data not ready yet
         return;
     }
@@ -206,7 +208,7 @@ export default function CharacterSheetPage() {
     }
 
     loadSheet();
-  }, [router, toast, races, gameClasses]);
+  }, [router, toast, races, gameClasses, mythologies]);
 
 
   const handleAttributeIncrease = (attributeName: string) => {

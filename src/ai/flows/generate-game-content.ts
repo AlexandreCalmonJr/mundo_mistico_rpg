@@ -12,7 +12,7 @@ import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 
 const GenerateGameContentInputSchema = z.object({
-  contentType: z.string().describe('The type of content to generate (e.g., Classe, Raça, Habilidade, Arma, Mapa, Grupo de Classe, Temporada).'),
+  contentType: z.string().describe('The type of content to generate (e.g., Classe, Raça, Habilidade, Arma, Mapa, Grupo de Classe, Temporada, Mitologia).'),
   prompt: z.string().describe('A text prompt describing the desired content. For a season, describe the theme.'),
 });
 export type GenerateGameContentInput = z.infer<typeof GenerateGameContentInputSchema>;
@@ -118,6 +118,12 @@ Use as seguintes estruturas como modelo para cada tipo de conteúdo. Preencha to
   "levelRequirement": 20
 }
 
+**Se o tipo for "Mitologia":**
+{
+    "id": "id-unico-mitologia",
+    "name": "Nome da Mitologia"
+}
+
 **Se o tipo for "Temporada" ou um tema amplo, gere um array de objetos contendo classes, raças, armas, etc., que se encaixem no tema.**
 Exemplo para "Temporada Fim do Mundo":
 [
@@ -190,3 +196,4 @@ const generateGameContentFlow = ai.defineFlow(
     }
   }
 );
+

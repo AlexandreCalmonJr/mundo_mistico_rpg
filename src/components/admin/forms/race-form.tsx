@@ -23,8 +23,8 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { mythologies } from '@/lib/game-data';
 import { PlusCircle, Trash2 } from 'lucide-react';
+import type { Mythology } from '@/lib/game-data';
 
 const attributeModifierSchema = z.object({
     attribute: z.string().min(1, "Atributo é obrigatório."),
@@ -45,11 +45,12 @@ interface RaceFormProps {
   onClose: () => void;
   onSave: (data: z.infer<typeof formSchema>) => void;
   defaultValues: any;
+  mythologies: Mythology[];
 }
 
 const ATTRIBUTE_OPTIONS = ["Força", "Agilidade", "Inteligência", "Defesa"];
 
-export function RaceForm({ isOpen, onClose, onSave, defaultValues }: RaceFormProps) {
+export function RaceForm({ isOpen, onClose, onSave, defaultValues, mythologies }: RaceFormProps) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -181,3 +182,4 @@ export function RaceForm({ isOpen, onClose, onSave, defaultValues }: RaceFormPro
     </Dialog>
   );
 }
+
