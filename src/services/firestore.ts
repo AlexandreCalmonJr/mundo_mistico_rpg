@@ -1,4 +1,5 @@
 
+
 'use server';
 
 import { app } from '@/lib/firebase-config';
@@ -47,3 +48,15 @@ export async function deleteDocument(collectionName: string, docId: string): Pro
     const docRef = doc(db, collectionName, docId);
     await deleteDoc(docRef);
 }
+
+// Function to check if a user is an admin
+export async function checkAdminStatus(userId: string): Promise<boolean> {
+    const adminDoc = await getDoc(doc(db, 'admins', userId));
+    return adminDoc.exists();
+}
+
+// Function to make a user an admin
+export async function makeUserAdmin(userId: string): Promise<void> {
+    await setDoc(doc(db, 'admins', userId), { isAdmin: true });
+}
+

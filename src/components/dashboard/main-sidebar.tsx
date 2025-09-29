@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import Link from 'next/link';
@@ -52,7 +53,7 @@ function SidebarLogo() {
 
 export function MainSidebar() {
   const pathname = usePathname();
-  const { user, character, isAdmin, isFakeAdmin, logout } = useAuth();
+  const { user, character, isAdmin, logout } = useAuth();
 
 
   return (
@@ -63,8 +64,10 @@ export function MainSidebar() {
       <SidebarContent>
         <SidebarMenu>
           {menuItems.map((item) => {
-            // Hide character-specific links for admin
-            if (isFakeAdmin && (item.href.includes('/character/') || item.href === '/dashboard')) {
+            if (!character && (item.href.includes('/character/sheet') || item.href === '/dashboard' || item.href === '/dashboard/adventure')) {
+                return null;
+            }
+            if (character && item.href.includes('/character/create')) {
                 return null;
             }
             return (
@@ -112,8 +115,8 @@ export function MainSidebar() {
                 <AvatarFallback>{isAdmin ? 'A' : user?.displayName?.charAt(0) || 'A'}</AvatarFallback>
             </Avatar>
             <div className="flex flex-col">
-                <span className="text-sm font-semibold">{ isFakeAdmin ? 'Admin' : character?.name || user?.displayName || 'Aventureiro'}</span>
-                <span className="text-xs text-muted-foreground">{ isFakeAdmin ? 'Administrador' : `Nível ${character?.level || 0}` }</span>
+                <span className="text-sm font-semibold">{character?.name || user?.displayName || 'Aventureiro'}</span>
+                <span className="text-xs text-muted-foreground">{ isAdmin ? 'Administrador' : `Nível ${character?.level || 0}` }</span>
             </div>
          </div>
          <Button asChild variant="ghost" className="w-full justify-start gap-2" onClick={logout}>

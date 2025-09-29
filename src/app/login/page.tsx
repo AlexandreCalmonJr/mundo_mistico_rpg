@@ -1,37 +1,27 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Logo } from '@/components/icons/logo';
 import { useToast } from '@/hooks/use-toast';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+
 
 export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const { signInWithGoogle, setAdmin } = useAuth();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-
-  const handleAdminLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (email === 'admin@mundomitico.com' && password === 'admin123') {
-       setAdmin(true);
-    } else {
-      setAdmin(false);
-      toast({
-        title: 'Credenciais de admin inválidas',
-        description: 'Verifique seu email e senha de administrador.',
-        variant: 'destructive',
-      });
+  const { user, loading, signInWithGoogle } = useAuth();
+  
+  useEffect(() => {
+    if (!loading && user) {
+      router.push('/dashboard');
     }
-  };
+  }, [user, loading, router]);
+
 
   return (
     <div className="flex min-h-screen w-full items-center justify-center bg-background p-4">
@@ -49,31 +39,6 @@ export default function LoginPage() {
                 <Button variant="outline" onClick={signInWithGoogle}>
                     Entrar com Google
                 </Button>
-
-                <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                        <span className="w-full border-t" />
-                    </div>
-                    <div className="relative flex justify-center text-xs uppercase">
-                        <span className="bg-background px-2 text-muted-foreground">
-                        Ou entre como Admin
-                        </span>
-                    </div>
-                </div>
-
-                <form onSubmit={handleAdminLogin} className="grid gap-4">
-                    <div className="grid gap-2">
-                        <Label htmlFor="email">Email de Admin</Label>
-                        <Input id="email" type="email" placeholder="admin@mundomitico.com" required value={email} onChange={(e) => setEmail(e.target.value)} />
-                    </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="password">Senha de Admin</Label>
-                        <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
-                    </div>
-                    <Button type="submit" className="w-full">
-                        Entrar como Admin
-                    </Button>
-                </form>
             </div>
             <div className="mt-4 text-center text-sm">
               Não tem uma conta?{' '}

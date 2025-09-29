@@ -3,9 +3,9 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Edit, Trash2, Sparkles } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, Sparkles, ShieldCheck } from 'lucide-react';
 import type { Mythology, GameClass, Race, GameMap, Character, ClassGroup, Clan, AttributeModifier, Ability, Weapon, GameAttribute } from '@/lib/game-data';
-import { getCollection, addDocument, updateDocument, deleteDocument } from '@/services/firestore';
+import { getCollection, addDocument, updateDocument, deleteDocument, makeUserAdmin } from '@/services/firestore';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DataTable } from '@/components/admin/data-table';
@@ -34,12 +34,6 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { ContentGenerator } from '@/components/admin/content-generator';
 
 
-const initialUsers: any[] = [
-    { id: 'user-1', name: 'Admin', email: 'admin@mundomitico.com', role: 'Admin' },
-    { id: 'user-2', name: 'Jogador1', email: 'jogador1@email.com', role: 'Player' },
-    { id: 'user-3', name: 'Jogador2', email: 'jogador2@email.com', role: 'Player' },
-];
-
 type DataType = 'class' | 'race' | 'map' | 'user' | 'class-group' | 'clan' | 'ability' | 'weapon' | 'mythology' | 'attribute';
 type DialogState = {
   isOpen: boolean;
@@ -59,7 +53,7 @@ export default function AdminPage() {
   const [gameClasses, setGameClasses] = useState<GameClass[]>([]);
   const [races, setRaces] = useState<Race[]>([]);
   const [gameMaps, setGameMaps] = useState<GameMap[]>([]);
-  const [users, setUsers] = useState<any[]>(initialUsers);
+  const [users, setUsers] = useState<Character[]>([]);
   const [classGroups, setClassGroups] = useState<ClassGroup[]>([]);
   const [clans, setClans] = useState<Clan[]>([]);
   const [abilities, setAbilities] = useState<Ability[]>([]);
@@ -83,7 +77,8 @@ export default function AdminPage() {
             abilitiesFromDb, 
             weaponsFromDb, 
             clansFromDb,
-            attributesFromDb
+            attributesFromDb,
+            usersFromDb
         ] = await Promise.all([
           getCollection<Mythology>('mythologies'),
           getCollection<GameClass>('classes'),
@@ -94,6 +89,7 @@ export default function AdminPage() {
           getCollection<Weapon>('weapons'),
           getCollection<Clan>('clans'),
           getCollection<GameAttribute>('attributes'),
+          getCollection<Character>('characters'),
         ]);
         setMythologies(mythologiesFromDb);
         setGameClasses(classesFromDb);
@@ -104,6 +100,7 @@ export default function AdminPage() {
         setWeapons(weaponsFromDb);
         setClans(clansFromDb);
         setAttributes(attributesFromDb);
+        setUsers(usersFromDb);
       } catch (error) {
         console.error("Failed to fetch game data:", error);
         toast({
@@ -146,11 +143,7 @@ export default function AdminPage() {
         case 'weapon': collectionName = 'weapons'; break;
         case 'clan': collectionName = 'clans'; break;
         case 'attribute': collectionName = 'attributes'; break;
-        case 'user':
-          setUsers(prev => prev.filter(item => item.id !== deleteConfirm.id));
-           toast({ title: "Usuário excluído com sucesso!" });
-          setDeleteConfirm({ isOpen: false, type: null, id: null });
-          return;
+        case 'user': collectionName = 'characters'; break;
         default:
           toast({title: "Tipo inválido", description: "O tipo de dado para exclusão é inválido.", variant: 'destructive'});
           return;
@@ -168,6 +161,7 @@ export default function AdminPage() {
          case 'weapon': setWeapons(prev => prev.filter(item => item.id !== deleteConfirm.id)); break;
          case 'clan': setClans(prev => prev.filter(item => item.id !== deleteConfirm.id)); break;
          case 'attribute': setAttributes(prev => prev.filter(item => item.id !== deleteConfirm.id)); break;
+         case 'user': setUsers(prev => prev.filter(item => item.id !== deleteConfirm.id)); break;
       }
       toast({ title: "Item excluído com sucesso!" });
     } catch (error) {
@@ -206,12 +200,7 @@ export default function AdminPage() {
             case 'attribute':
                 collectionName = 'attributes'; setData = setAttributes; successMsg = 'Atributo'; break;
             case 'user':
-                if (!isEditing) {
-                    setUsers(prev => [...prev, { ...data, id: `user-${Date.now()}` }]);
-                } else {
-                    setUsers(prev => prev.map(item => item.id === data.id ? data : item));
-                }
-                toast({ title: "Usuário salvo com sucesso!" });
+                toast({title: "Não implementado", description: "A edição de usuários não é permitida.", variant: 'destructive'});
                 handleCloseDialog();
                 return;
             default:
@@ -237,6 +226,23 @@ export default function AdminPage() {
     }
     handleCloseDialog();
   };
+
+  const handleMakeAdmin = async (userId: string) => {
+    try {
+        await makeUserAdmin(userId);
+        toast({
+            title: "Sucesso!",
+            description: `Usuário ${userId} agora é um administrador. As alterações terão efeito no próximo login.`,
+        });
+    } catch(e) {
+        toast({
+            title: "Erro",
+            description: "Não foi possível tornar o usuário um administrador.",
+            variant: "destructive"
+        });
+        console.error("Failed to make user admin", e);
+    }
+  }
 
   const getForm = () => {
     if (!dialogState.isOpen) return null;
@@ -373,14 +379,14 @@ export default function AdminPage() {
 
   const userColumns = [
     { accessorKey: 'name', header: 'Nome' },
-    { accessorKey: 'email', header: 'Email' },
-    { accessorKey: 'role', header: 'Função' },
+    { accessorKey: 'gameClass', header: 'Classe', cell: ({row}: any) => gameClasses.find(c => c.id === row.original.gameClass)?.name || row.original.gameClass },
+    { accessorKey: 'level', header: 'Nível' },
     {
       id: 'actions',
-      cell: ({ row }: { row: { original: any } }) => (
+      cell: ({ row }: { row: { original: Character } }) => (
         <div className="flex gap-2">
-           <Button variant="outline" size="sm" disabled>
-            <Edit className="h-4 w-4" />
+           <Button variant="outline" size="sm" onClick={() => handleMakeAdmin(row.original.id)}>
+            <ShieldCheck className="h-4 w-4 mr-2" /> Tornar Admin
           </Button>
           <Button variant="destructive" size="sm" onClick={() => handleDelete('user', row.original.id)}>
             <Trash2 className="h-4 w-4" />
@@ -507,7 +513,7 @@ export default function AdminPage() {
 
 
         <Tabs defaultValue="classes">
-          <TabsList className="mb-4">
+          <TabsList className="mb-4 flex-wrap h-auto justify-start">
             <TabsTrigger value="mythologies">Mitologias</TabsTrigger>
             <TabsTrigger value="attributes">Atributos</TabsTrigger>
             <TabsTrigger value="classes">Classes</TabsTrigger>
