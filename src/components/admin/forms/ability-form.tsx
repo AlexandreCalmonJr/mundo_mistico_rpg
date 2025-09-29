@@ -28,6 +28,7 @@ import type { GameClass } from '@/lib/game-data';
 import { Sparkles, Loader2 } from 'lucide-react';
 import { generateGameContent } from '@/ai/flows/generate-game-content';
 import { useToast } from '@/hooks/use-toast';
+import { Label } from '@/components/ui/label';
 
 const formSchema = z.object({
   id: z.string().optional(),
