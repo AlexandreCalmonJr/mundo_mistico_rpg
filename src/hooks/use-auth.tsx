@@ -58,7 +58,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setCharacter(null);
 
         const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
-        if (isProtectedRoute && !sessionAdmin) {
+        if (isProtectedRoute && !sessionAdmin && pathname !== '/admin-login') {
           router.push('/login');
         }
       }
@@ -79,13 +79,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const adminLogin = async (email: string, pass: string) => {
-    if (email === 'admin@mundomitico.com' && pass === 'admin123') {
+    if (email === 'alexandrecalmonjunior@gmail.com' && pass === 'admin123') {
         sessionStorage.setItem('isAdmin', 'true');
         setIsAdmin(true);
-        setUser(null); 
-        setCharacter(null);
-        setLoading(false);
-        router.push('/dashboard');
     } else {
         throw new Error('Credenciais de administrador inválidas.');
     }
