@@ -25,6 +25,8 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const protectedRoutes = ['/dashboard'];
+const adminOnlyRoutes = ['/dashboard/admin'];
+
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -58,8 +60,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setCharacter(null);
 
         const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
+        const isAdminRoute = adminOnlyRoutes.some(route => pathname.startsWith(route));
+
+        // If on a protected route, and not a session admin, and not trying to log in as admin, redirect to login
         if (isProtectedRoute && !sessionAdmin && pathname !== '/admin-login') {
           router.push('/login');
+        }
+        
+        // If on an admin route and not a session admin, redirect
+        if (isAdminRoute && !sessionAdmin) {
+            router.push('/admin-login');
         }
       }
       setLoading(false);
@@ -79,7 +89,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const adminLogin = async (email: string, pass: string) => {
-    if (email === 'alexandrecalmonjunior@gmail.com' && pass === 'admin123') {
+    if ((email === 'alexandrecalmonjunior@gmail.com' || email === 'admin@mundomitico.com') && pass === 'admin123') {
         sessionStorage.setItem('isAdmin', 'true');
         setIsAdmin(true);
     } else {
