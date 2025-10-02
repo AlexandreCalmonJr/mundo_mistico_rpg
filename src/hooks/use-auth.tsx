@@ -38,15 +38,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      console.log('Auth state changed. User:', user ? user.uid : null);
       setLoading(true);
       
       const sessionAdmin = sessionStorage.getItem('isAdmin') === 'true';
-      console.log(`Session admin status: ${sessionAdmin}`);
       setIsAdmin(sessionAdmin);
 
       if (user) {
-        console.log('User is present. Fetching data...');
         setUser(user);
         const adminStatus = await checkAdminStatus(user.uid) || sessionAdmin;
         setIsAdmin(adminStatus);
@@ -56,26 +53,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         
         const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
         if (isProtectedRoute && !char && !pathname.startsWith('/dashboard/character/create') && !adminStatus) {
-            console.log('Redirecting to character creation...');
             router.push('/dashboard/character/create');
         }
 
       } else {
-        console.log('No user from Firebase. Checking session admin.');
         setUser(null);
         setCharacter(null);
 
         const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
-        const isAdminLoginPage = pathname === '/admin-login';
-
-        if (isProtectedRoute && !sessionAdmin && !isAdminLoginPage) {
-            console.log(`Protected route (${pathname}) and not session admin. Redirecting to /login.`);
+        
+        if (isProtectedRoute && !sessionAdmin) {
             router.push('/login');
-        } else {
-             console.log('Either not a protected route or is session admin. No redirect needed.');
         }
       }
-      console.log('Finished auth check. Loading set to false.');
       setLoading(false);
     });
 
@@ -93,13 +83,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const adminLogin = async (email: string, pass: string) => {
-    console.log(`Attempting admin login with email: ${email}`);
     if ((email === 'alexandrecalmonjunior@gmail.com' || email === 'admin@mundomitico.com') && pass === 'admin123') {
-        console.log('Admin credentials valid. Setting session admin status.');
         sessionStorage.setItem('isAdmin', 'true');
         setIsAdmin(true);
     } else {
-        console.log('Admin credentials invalid.');
         throw new Error('Credenciais de administrador inválidas.');
     }
   };
