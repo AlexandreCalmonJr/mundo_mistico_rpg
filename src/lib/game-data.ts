@@ -1,5 +1,65 @@
 
 
+// Basic types used across different data structures
+export type Parameter = {
+  name: 'Força' | 'Resistência' | 'Agilidade' | 'Mana' | 'Sorte' | 'NP';
+  rank: 'E' | 'D' | 'C' | 'B' | 'A' | 'EX';
+};
+
+export type Skill = {
+  name: string;
+  rank: string;
+  description: string;
+};
+
+export type NoblePhantasm = {
+  name: string;
+  rank: 'E' | 'D' | 'C' | 'B' | 'A' | 'EX';
+  type: string;
+  description: string;
+};
+
+// The Heroic Spirit, summoned by a Master
+export type Servant = {
+  className: 'Saber' | 'Archer' | 'Lancer' | 'Rider' | 'Caster' | 'Assassin' | 'Berserker';
+  trueName: string;
+  backstory: string;
+  personality: string;
+  parameters: Parameter[];
+  classSkills: Skill[];
+  personalSkills: Skill[];
+  noblePhantasm: NoblePhantasm;
+  imageUrl: string;
+  imageHint: string;
+};
+
+// The Player Character, a Master in the Holy Grail War
+export type Character = {
+  id: string; // This will be the user's UID from Firebase Auth
+  name: string; // Master's name
+  level: number;
+  servant: Servant | null;
+}
+
+// Represents an enemy in a battle scenario
+export type Enemy = {
+  id: string;
+  name: string;
+  maxHp: number;
+  currentHp: number;
+  attack: number;
+  defense: number;
+}
+
+// Maps or locations for battles/events
+export type GameMap = {
+    name: string;
+    type: string;
+    description: string;
+}
+
+// --- Legacy Types (to be phased out or repurposed) ---
+
 export type Attribute = {
   name: string;
   value: number;
@@ -17,7 +77,7 @@ export type Ability = {
   type: 'Ataque' | 'Defesa' | 'Suporte' | 'Utilidade';
   cost: number;
   levelRequirement: number;
-  classId: string; // ID da classe que pode usar a habilidade
+  classId: string; 
 }
 
 export type Weapon = {
@@ -27,16 +87,7 @@ export type Weapon = {
   type: 'Espada' | 'Machado' | 'Arco' | 'Cajado' | 'Adaga' | 'Lança';
   damage: number;
   rarity: 'Comum' | 'Incomum' | 'Raro' | 'Épico' | 'Lendário';
-  classRequirement: string[]; // Array de IDs de classes
-}
-
-export type Enemy = {
-  id: string;
-  name: string;
-  maxHp: number;
-  currentHp: number;
-  attack: number;
-  defense: number;
+  classRequirement: string[];
 }
 
 export type Mythology = {
@@ -51,7 +102,7 @@ export type GameClass = {
   strengths: string[];
   weaknesses: string[];
   image: string;
-  mythology: string; // 'Norse', 'Greek', 'Egyptian', etc.
+  mythology: string; 
   attributeModifiers: AttributeModifier[];
 };
 
@@ -60,35 +111,14 @@ export type Race = {
   name: string;
   description: string;
   image: string;
-  mythology: string; // 'Norse', 'Greek', 'Egyptian', etc.
+  mythology: string; 
   attributeModifiers: AttributeModifier[];
 };
-
-export type GameMap = {
-    name: string;
-    type: string;
-    description: string;
-}
 
 export type GameAttribute = {
     id: string;
     name: string;
     description: string;
-}
-
-export type Character = {
-  id: string; // This will be the user's UID from Firebase Auth
-  name: string;
-  mythology: string;
-  race: string;
-  gameClass: string;
-  level: number;
-  xp: number;
-  xpToNextLevel: number;
-  attributePoints: number;
-  attributes: Attribute[];
-  maxHp: number;
-  currentHp: number;
 }
 
 export type ClassGroup = {
@@ -108,7 +138,7 @@ export type Clan = {
 export const enemies: Enemy[] = [
     {
         id: 'goblin',
-        name: 'Goblin',
+        name: 'Homúnculo Defeituoso',
         maxHp: 50,
         currentHp: 50,
         attack: 10,
@@ -116,7 +146,7 @@ export const enemies: Enemy[] = [
     },
     {
         id: 'troll',
-        name: 'Troll da Caverna',
+        name: 'Besta Mágica Descontrolada',
         maxHp: 120,
         currentHp: 120,
         attack: 25,
@@ -124,7 +154,7 @@ export const enemies: Enemy[] = [
     },
     {
         id: 'golem',
-        name: 'Golem de Pedra',
+        name: 'Golem Guardião de Oficina',
         maxHp: 200,
         currentHp: 200,
         attack: 20,

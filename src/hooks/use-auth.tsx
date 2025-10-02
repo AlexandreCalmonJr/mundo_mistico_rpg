@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
@@ -19,7 +18,7 @@ interface AuthContextType {
   signInWithGoogle: () => Promise<void>;
   adminLogin: (email: string, pass: string) => Promise<void>;
   logout: () => Promise<void>;
-  saveCharacter: (characterData: Character) => Promise<void>;
+  saveCharacter: (characterData: Omit<Character, 'id'> | Character) => Promise<void>;
   makeUserAdmin: (userId: string) => Promise<void>;
 }
 
@@ -42,7 +41,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(user);
         const adminStatus = await checkAdminStatus(user.uid);
         setIsAdmin(adminStatus);
-        sessionStorage.removeItem('isAdmin'); // Clear session admin if firebase user exists
+        sessionStorage.removeItem('isAdmin'); 
         
         const char = await getDocument<Character>('characters', user.uid);
         setCharacter(char);
@@ -53,14 +52,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
 
       } else {
-        // No firebase user, check for session admin
         const sessionAdmin = sessionStorage.getItem('isAdmin') === 'true';
         setIsAdmin(sessionAdmin);
         setUser(null);
         setCharacter(null);
 
         const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
-        // Redirect ONLY if it's a protected route AND the user is not a session admin
         if (isProtectedRoute && !sessionAdmin) {
           router.push('/login');
         }
@@ -76,7 +73,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const provider = new GoogleAuthProvider();
     try {
       await signInWithPopup(auth, provider);
-      // onAuthStateChanged will handle the user state update
     } catch (error) {
       console.error("Error signing in with Google: ", error);
     }
@@ -88,10 +84,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setIsAdmin(true);
         setUser(null); 
         setCharacter(null);
-        setLoading(false); // Explicitly set loading to false
-        return Promise.resolve();
+        setLoading(false);
+        router.push('/dashboard');
     } else {
-        return Promise.reject(new Error('Credenciais de administrador inválidas.'));
+        throw new Error('Credenciais de administrador inválidas.');
     }
   };
 
@@ -104,10 +100,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     router.push('/login');
   };
   
-  const saveCharacter = async (characterData: Character) => {
+  const saveCharacter = async (characterData: Omit<Character, 'id'> | Character) => {
       if(user) {
-          await setDocument('characters', user.uid, characterData);
-          setCharacter(characterData);
+          const dataToSave = 'id' in characterData ? characterData : { ...characterData, id: user.uid };
+          await setDocument('characters', user.uid, dataToSave);
+          setCharacter(dataToSave as Character);
       }
   }
 
@@ -117,7 +114,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setIsAdmin(true);
     }
   }
-
 
   return (
     <AuthContext.Provider value={{ user, character, loading, isAdmin, signInWithGoogle, adminLogin, logout, saveCharacter, makeUserAdmin }}>

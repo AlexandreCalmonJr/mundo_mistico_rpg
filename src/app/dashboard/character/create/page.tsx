@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -11,124 +11,72 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import type { GameClass, Race, Character, Mythology } from '@/lib/game-data';
-import { getCollection } from '@/services/firestore';
+import { Textarea } from '@/components/ui/textarea';
 import { Sparkles } from 'lucide-react';
-import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/hooks/use-auth';
 
 const formSchema = z.object({
-  name: z.string().min(2, 'O nome deve ter pelo menos 2 caracteres.').max(50, 'O nome deve ter no máximo 50 caracteres.'),
-  mythology: z.string({ required_error: 'Por favor, selecione uma mitologia.' }),
-  race: z.string({ required_error: 'Por favor, selecione uma raça.' }),
-  gameClass: z.string({ required_error: 'Por favor, selecione uma classe.' }),
+  masterName: z.string().min(2, 'O nome deve ter pelo menos 2 caracteres.').max(50, 'O nome deve ter no máximo 50 caracteres.'),
+  masterDescription: z.string().min(50, 'Descreva seus ideais em pelo menos 50 caracteres.').max(1000, 'A descrição deve ter no máximo 1000 caracteres.'),
 });
 
-export default function CharacterCreationPage() {
+export default function ServantSummoningPage() {
   const router = useRouter();
-  const { user, saveCharacter } = useAuth();
-  const [mythologies, setMythologies] = useState<Mythology[]>([]);
-  const [gameClasses, setGameClasses] = useState<GameClass[]>([]);
-  const [races, setRaces] = useState<Race[]>([]);
-  const [loading, setLoading] = useState(true);
-
+  const { user, saveCharacter, character } = useAuth();
+  
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: '',
+      masterName: character?.name || '',
+      masterDescription: '',
     },
   });
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const [mythologiesData, classesData, racesData] = await Promise.all([
-          getCollection<Mythology>('mythologies'),
-          getCollection<GameClass>('classes'),
-          getCollection<Race>('races'),
-        ]);
-        setMythologies(mythologiesData);
-        setGameClasses(classesData);
-        setRaces(racesData);
-      } catch (error) {
-        console.error("Failed to fetch creation data:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchData();
-  }, []);
-
-  const selectedMythology = form.watch('mythology');
-
-  const availableRaces = races.filter(r => r.mythology === selectedMythology);
-  const availableClasses = gameClasses.filter(gc => gc.mythology === selectedMythology);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     if (!user) {
         router.push('/login');
         return;
     }
-
-    // This is a partial character, the rest will be generated in the sheet page
-    const partialCharacter: Omit<Character, 'level' | 'attributes' | 'xp' | 'xpToNextLevel' | 'attributePoints' | 'maxHp' | 'currentHp' | 'id'> = {
-        name: values.name,
-        mythology: values.mythology,
-        race: values.race,
-        gameClass: values.gameClass,
-    };
     
-    // Save this partial data to trigger the sheet generation
-    // The full character object will be constructed and saved in the sheet page
-    localStorage.setItem(`temp_char_${user.uid}`, JSON.stringify(partialCharacter));
+    // Store the catalyst information to be used on the sheet page for summoning
+    localStorage.setItem(`summoning_catalyst_${user.uid}`, JSON.stringify(values));
 
-    // Clear any old AI generated data to ensure regeneration
-    localStorage.removeItem(`char_backstory_${user.uid}`);
-    localStorage.removeItem(`char_equipment_${user.uid}`);
-    localStorage.removeItem(`char_abilities_${user.uid}`);
+    // Clear any old servant data to ensure a fresh summoning
+    localStorage.removeItem(`servant_data_${user.uid}`);
     
-    await saveCharacter({} as Character); // Save an empty object to trigger re-fetch in sheet page
+    // Save a minimal master profile, this will trigger the redirect and summoning process
+    await saveCharacter({
+        id: user.uid,
+        name: values.masterName,
+        level: 1, // All masters start at level 1
+        servant: null, // Servant will be summoned on the next page
+    });
 
     router.push('/dashboard/character/sheet');
-  }
-
-  if (loading) {
-    return (
-      <main className="p-4 sm:p-6 lg:p-8"><div className="container mx-auto max-w-2xl space-y-4">
-        <Skeleton className="h-10 w-1/2" />
-        <Skeleton className="h-8 w-3/4" />
-        <Card><CardHeader><Skeleton className="h-6 w-1/3" /></CardHeader><CardContent className="space-y-4">
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-10 w-full" />
-        </CardContent></Card>
-      </div></main>
-    )
   }
 
   return (
     <main className="p-4 sm:p-6 lg:p-8">
       <div className="container mx-auto max-w-2xl">
-        <h1 className="text-3xl font-headline font-bold text-primary mb-2">Criação de Personagem</h1>
-        <p className="text-muted-foreground mb-8">Dê vida ao seu herói. Escolha sua origem, raça e classe para começar.</p>
+        <h1 className="text-3xl font-headline font-bold text-primary mb-2">Ritual de Invocação</h1>
+        <p className="text-muted-foreground mb-8">O Santo Graal responde não a poder, mas a desejo. Descreva seus ideais, sua alma, e o herói que ecoa seu coração atenderá ao seu chamado.</p>
 
         <Card>
           <CardHeader>
-            <CardTitle>Detalhes do Personagem</CardTitle>
-            <CardDescription>Cada escolha molda o início da sua jornada.</CardDescription>
+            <CardTitle>Círculo de Invocação</CardTitle>
+            <CardDescription>Suas palavras servirão como catalisador.</CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                 <FormField
                   control={form.control}
-                  name="name"
+                  name="masterName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Nome do Personagem</FormLabel>
+                      <FormLabel>Seu Nome de Mestre</FormLabel>
                       <FormControl>
-                        <Input placeholder="Nome do seu herói" {...field} />
+                        <Input placeholder="O nome que será gravado na história" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -137,80 +85,26 @@ export default function CharacterCreationPage() {
 
                 <FormField
                   control={form.control}
-                  name="mythology"
+                  name="masterDescription"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Panteão Mitológico</FormLabel>
-                       <Select onValueChange={(value) => {
-                          field.onChange(value);
-                          form.setValue('race', '');
-                          form.setValue('gameClass', '');
-                       }} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecione sua origem mitológica" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {mythologies.map((myth) => (
-                            <SelectItem key={myth.id} value={myth.id}>{myth.name}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                       <FormDescription>A escolha do panteão define as raças e classes disponíveis.</FormDescription>
+                      <FormLabel>O Encantamento (Seus Ideais como Catalisador)</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                            placeholder="Ex: 'Busco a justiça acima de tudo, mesmo que o caminho seja solitário. Minha lâmina é para proteger os fracos e meu escudo para resistir à tirania. Não desejo o Graal para mim, mas para criar um mundo onde ninguém precise sofrer como eu sofri...'"
+                            {...field} 
+                            rows={8}
+                        />
+                      </FormControl>
+                      <FormDescription>Descreva sua personalidade, seus desejos para o Graal e seu estilo de combate. Seja honesto. O Graal está ouvindo.</FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
                 
-                <FormField
-                  control={form.control}
-                  name="race"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Raça</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value} disabled={!selectedMythology}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecione uma raça" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {availableRaces.map((race) => (
-                            <SelectItem key={race.id} value={race.id}>{race.name}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="gameClass"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Classe</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value} disabled={!selectedMythology}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecione uma classe" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {availableClasses.map((gClass) => (
-                            <SelectItem key={gClass.id} value={gClass.id}>{gClass.name}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
                 <Button type="submit">
                   <Sparkles className="mr-2 h-4 w-4" />
-                  Forjar Personagem
+                  Começar o Ritual e Invocar Servo
                 </Button>
               </form>
             </Form>

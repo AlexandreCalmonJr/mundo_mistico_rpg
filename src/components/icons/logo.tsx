@@ -1,3 +1,4 @@
+
 import Link from "next/link";
 import { Sparkles } from 'lucide-react';
 
@@ -7,7 +8,7 @@ export function Logo() {
         <div className="bg-primary/10 p-2 rounded-md">
             <Sparkles className="text-primary" />
         </div>
-      Mundo Mítico
+      Guerra do Graal
     </Link>
   );
 }

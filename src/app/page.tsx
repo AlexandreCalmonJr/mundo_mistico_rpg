@@ -22,7 +22,7 @@ export default function Home() {
             data-ai-hint={heroImage.imageHint}
             />
         )}
-        <div className="absolute inset-0 bg-background/70 backdrop-blur-sm" />
+        <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" />
       </div>
 
 
@@ -43,14 +43,14 @@ export default function Home() {
       <main className="relative z-10 flex flex-grow items-center justify-center">
         <div className="container mx-auto flex flex-col items-center text-center px-4">
           <h1 className="font-headline text-5xl md:text-7xl font-bold text-primary animate-fade-in-down">
-            Mundo Mítico
+            Guerra Pelo Santo Graal
           </h1>
           <p className="mt-4 max-w-2xl text-lg md:text-xl text-foreground/80 animate-fade-in-up">
-            Forje sua lenda em um RPG online onde suas escolhas moldam a história. Enfrente desafios míticos, resolva enigmas ancestrais e torne-se um herói.
+            Sete Mestres, Sete Servos. Uma batalha secreta pelo artefato que realiza qualquer desejo. Torne-se um Mestre, invoque seu Espírito Heroico e lute pela sua convicção.
           </p>
           <div className="mt-8 flex gap-4 animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
             <Button asChild size="lg">
-              <Link href="/signup">Comece sua Jornada</Link>
+              <Link href="/signup">Torne-se um Mestre</Link>
             </Button>
           </div>
         </div>
