@@ -84,7 +84,7 @@ export function MainSidebar() {
            })}
         </SidebarMenu>
         {isAdmin && (
-            <SidebarMenu className="mt-auto">
+             <SidebarMenu className="mt-4">
                 <div className="mb-2 ml-2 mt-2">
                     <p className="text-xs font-semibold text-muted-foreground tracking-wider">ADMINISTRAÇÃO</p>
                 </div>
