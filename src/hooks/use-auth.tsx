@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
@@ -7,6 +6,7 @@ import { app } from '@/lib/firebase-config';
 import { useRouter, usePathname } from 'next/navigation';
 import { getDocument, setDocument, checkAdminStatus, makeUserAdmin as makeUserAdminInDb } from '@/services/firestore';
 import type { Character } from '@/lib/game-data';
+import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 
 const auth = getAuth(app);
 
@@ -39,30 +39,37 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setLoading(true);
-      
       const sessionAdmin = sessionStorage.getItem('isAdmin') === 'true';
-      setIsAdmin(sessionAdmin);
+
+      // If the user is an admin via session, we can stop here.
+      if (sessionAdmin) {
+        setIsAdmin(true);
+        setUser(null);
+        setCharacter(null);
+        setLoading(false);
+        return;
+      }
 
       if (user) {
         setUser(user);
-        const adminStatus = await checkAdminStatus(user.uid) || sessionAdmin;
+        const adminStatus = await checkAdminStatus(user.uid);
         setIsAdmin(adminStatus);
         
         const char = await getDocument<Character>('characters', user.uid);
         setCharacter(char);
         
         const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
-        if (isProtectedRoute && !char && !pathname.startsWith('/dashboard/character/create') && !adminStatus) {
-            router.push('/dashboard/character/create');
+        if (isProtectedRoute && !char && !adminStatus && !pathname.startsWith('/dashboard/character/create')) {
+             router.push('/dashboard/character/create');
         }
 
       } else {
         setUser(null);
         setCharacter(null);
+        setIsAdmin(false);
 
         const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
-        
-        if (isProtectedRoute && !sessionAdmin) {
+        if (isProtectedRoute) {
             router.push('/login');
         }
       }
@@ -117,6 +124,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <AuthContext.Provider value={{ user, character, loading, isAdmin, signInWithGoogle, adminLogin, logout, saveCharacter, makeUserAdmin }}>
+      <FirebaseErrorListener />
       {children}
     </AuthContext.Provider>
   );
