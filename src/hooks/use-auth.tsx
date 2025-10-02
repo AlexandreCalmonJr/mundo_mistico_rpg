@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
-import { getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup, User } from 'firebase/auth';
+import { getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup, User, AuthError } from 'firebase/auth';
 import { app } from '@/lib/firebase-config';
 import { useRouter, usePathname } from 'next/navigation';
 import { getDocument, setDocument, checkAdminStatus, makeUserAdmin as makeUserAdminInDb } from '@/services/firestore';
@@ -41,7 +41,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setLoading(true);
       const sessionAdmin = sessionStorage.getItem('isAdmin') === 'true';
 
-      // If the user is an admin via session, we can stop here.
       if (sessionAdmin) {
         setIsAdmin(true);
         setUser(null);
@@ -49,7 +48,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setLoading(false);
         return;
       }
-
+      
       if (user) {
         setUser(user);
         const adminStatus = await checkAdminStatus(user.uid);
@@ -69,7 +68,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setIsAdmin(false);
 
         const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
-        if (isProtectedRoute) {
+        if (isProtectedRoute && !sessionAdmin) {
             router.push('/login');
         }
       }
@@ -85,7 +84,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       await signInWithPopup(auth, provider);
     } catch (error) {
-      console.error("Error signing in with Google: ", error);
+      // Don't show an error if the user closes the popup
+      const authError = error as AuthError;
+      if (authError.code !== 'auth/popup-closed-by-user') {
+        console.error("Error signing in with Google: ", error);
+      }
     }
   };
 
