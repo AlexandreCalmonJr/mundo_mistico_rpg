@@ -108,7 +108,7 @@ export function MainSidebar() {
       <SidebarFooter>
          <div className="flex items-center gap-3">
             <Avatar>
-                <AvatarImage src={user?.photoURL || ""} />
+                <AvatarImage src={user?.photoURL || undefined} />
                 <AvatarFallback>{character?.name?.charAt(0) || user?.displayName?.charAt(0) || 'M'}</AvatarFallback>
             </Avatar>
             <div className="flex flex-col">
